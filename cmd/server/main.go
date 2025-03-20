@@ -109,6 +109,16 @@ func main() {
 		log.Println("Używam portu z zmiennej środowiskowej:", port)
 	}
 
+	// Ustaw zmienną środowiskową APP_URL jeśli nie jest ustawiona
+	appURL := os.Getenv("APP_URL")
+	if appURL == "" {
+		appURL = "https://ispindle.piwo.org"
+		os.Setenv("APP_URL", appURL)
+		log.Println("Używam domyślnego URL aplikacji:", appURL)
+	} else {
+		log.Println("Używam URL aplikacji z zmiennej środowiskowej:", appURL)
+	}
+
 	// Uruchomienie serwera
 	log.Printf("Uruchamianie serwera na porcie :%s...", port)
 	if err := r.Run(fmt.Sprintf(":%s", port)); err != nil {

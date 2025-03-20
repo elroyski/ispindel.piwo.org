@@ -35,7 +35,7 @@ func InitMailer() {
 func SendActivationEmail(to, name, token string) error {
 	subject := "Aktywacja konta iSpindel"
 	
-	baseURL := getEnvOrDefault("APP_URL", "http://ispindle.piwo.org:49330")
+	baseURL := getEnvOrDefault("APP_URL", "https://ispindle.piwo.org")
 	activationURL := fmt.Sprintf("%s/auth/activate?token=%s", baseURL, token)
 	
 	body := fmt.Sprintf(`Cześć %s,
@@ -59,7 +59,7 @@ Zespół iSpindel
 func SendPasswordResetEmail(to, name, token string) error {
 	subject := "Reset hasła iSpindel"
 	
-	baseURL := getEnvOrDefault("APP_URL", "http://ispindle.piwo.org:49330")
+	baseURL := getEnvOrDefault("APP_URL", "https://ispindle.piwo.org")
 	resetURL := fmt.Sprintf("%s/auth/reset-password?token=%s", baseURL, token)
 	
 	body := fmt.Sprintf(`Cześć %s,
