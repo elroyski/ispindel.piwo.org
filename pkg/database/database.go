@@ -25,7 +25,7 @@ func InitDB() {
 	log.Printf("Database: %s", dbname)
 	log.Printf("Port: %s", port)
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable connect_timeout=10 application_name=ispindel",
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=prefer",
 		host, user, password, dbname, port)
 
 	log.Printf("DSN: %s", dsn)
