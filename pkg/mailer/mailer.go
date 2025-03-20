@@ -38,7 +38,7 @@ func SendActivationEmail(to, name, token string) error {
 	// Pobierz bazowy URL i wyraźnie go zaloguj
 	baseURL := os.Getenv("APP_URL")
 	if baseURL == "" {
-		baseURL = "https://ispindle.piwo.org"
+		baseURL = "https://ispindel.piwo.org"
 		log.Printf("UWAGA: Zmienna APP_URL nie jest ustawiona. Używam domyślnej wartości: %s", baseURL)
 	} else {
 		log.Printf("Używam zmiennej APP_URL: %s", baseURL)
