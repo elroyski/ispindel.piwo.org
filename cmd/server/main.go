@@ -112,7 +112,7 @@ func main() {
 	// Ustaw zmienną środowiskową APP_URL jeśli nie jest ustawiona
 	appURL := os.Getenv("APP_URL")
 	if appURL == "" {
-		appURL = "https://ispindle.piwo.org"
+		appURL = "https://ispindel.piwo.org"
 		os.Setenv("APP_URL", appURL)
 		log.Println("Ustawiam domyślny URL aplikacji:", appURL)
 	} else {
