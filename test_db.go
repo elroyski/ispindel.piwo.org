@@ -134,4 +134,21 @@ func main() {
 		}
 		db7.Close()
 	}
+	
+	// Format 8 - inna nazwa użytkownika, bez SSL
+	dsn8 := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		host, altUser, password, dbname, port)
+	fmt.Println("\nPróba połączenia (format 8 - alternatywna nazwa użytkownika, bez SSL):", dsn8)
+	db8, err := sql.Open("postgres", dsn8)
+	if err != nil {
+		fmt.Println("Błąd otwarcia połączenia 8:", err)
+	} else {
+		err = db8.Ping()
+		if err != nil {
+			fmt.Println("Błąd ping połączenia 8:", err)
+		} else {
+			fmt.Println("Połączenie 8 udane!")
+		}
+		db8.Close()
+	}
 } 

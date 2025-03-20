@@ -25,17 +25,44 @@ func InitDB() {
 	log.Printf("Database: %s", dbname)
 	log.Printf("Port: %s", port)
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=prefer",
-		host, user, password, dbname, port)
-
-	log.Printf("DSN: %s", dsn)
-
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+	log.Printf("Próba połączenia 1: %s", dsn)
+	
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Nie udało się połączyć z bazą danych:", err)
+		log.Printf("Połączenie 1 nieudane: %v", err)
+		
+		dsn = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+			user, password, host, port, dbname)
+		log.Printf("Próba połączenia 2: %s", dsn)
+		
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		if err != nil {
+			log.Printf("Połączenie 2 nieudane: %v", err)
+			
+			dsn = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable client_encoding=UTF8",
+				host, port, user, password, dbname)
+			log.Printf("Próba połączenia 3: %s", dsn)
+			
+			db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+			if err != nil {
+				log.Printf("Połączenie 3 nieudane: %v", err)
+				
+				dsn = fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s",
+					user, password, host, port, dbname)
+				log.Printf("Próba połączenia 4: %s", dsn)
+				
+				db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+				if err != nil {
+					log.Fatal("Wszystkie próby połączenia nieudane:", err)
+				}
+			}
+		}
 	}
 
-	// Automatyczna migracja schematu
+	log.Println("Połączenie z bazą danych udane!")
+
 	err = db.AutoMigrate(&models.User{})
 	if err != nil {
 		log.Fatal("Nie udało się zmigrować schematu bazy danych:", err)
