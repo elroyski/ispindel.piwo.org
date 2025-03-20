@@ -82,4 +82,56 @@ func main() {
 		}
 		db4.Close()
 	}
+	
+	// Format 5 - sslmode=require
+	dsn5 := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require",
+		host, user, password, dbname, port)
+	fmt.Println("\nPróba połączenia (format 5):", dsn5)
+	db5, err := sql.Open("postgres", dsn5)
+	if err != nil {
+		fmt.Println("Błąd otwarcia połączenia 5:", err)
+	} else {
+		err = db5.Ping()
+		if err != nil {
+			fmt.Println("Błąd ping połączenia 5:", err)
+		} else {
+			fmt.Println("Połączenie 5 udane!")
+		}
+		db5.Close()
+	}
+	
+	// Format 6 - search_path=public
+	dsn6 := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require search_path=public",
+		host, user, password, dbname, port)
+	fmt.Println("\nPróba połączenia (format 6):", dsn6)
+	db6, err := sql.Open("postgres", dsn6)
+	if err != nil {
+		fmt.Println("Błąd otwarcia połączenia 6:", err)
+	} else {
+		err = db6.Ping()
+		if err != nil {
+			fmt.Println("Błąd ping połączenia 6:", err)
+		} else {
+			fmt.Println("Połączenie 6 udane!")
+		}
+		db6.Close()
+	}
+	
+	// Format 7 - inna nazwa użytkownika
+	altUser := "piwo_p1270_ispindle"
+	dsn7 := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require",
+		host, altUser, password, dbname, port)
+	fmt.Println("\nPróba połączenia (format 7 - alternatywna nazwa użytkownika):", dsn7)
+	db7, err := sql.Open("postgres", dsn7)
+	if err != nil {
+		fmt.Println("Błąd otwarcia połączenia 7:", err)
+	} else {
+		err = db7.Ping()
+		if err != nil {
+			fmt.Println("Błąd ping połączenia 7:", err)
+		} else {
+			fmt.Println("Połączenie 7 udane!")
+		}
+		db7.Close()
+	}
 } 
