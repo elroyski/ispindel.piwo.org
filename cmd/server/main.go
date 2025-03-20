@@ -11,11 +11,15 @@ import (
 	"ispindel.piwo.org/internal/services"
 	"ispindel.piwo.org/pkg/auth"
 	"ispindel.piwo.org/pkg/database"
+	"ispindel.piwo.org/pkg/mailer"
 )
 
 func main() {
 	// Inicjalizacja bazy danych
 	database.InitDB()
+	
+	// Inicjalizacja mailera
+	mailer.InitMailer()
 
 	// Inicjalizacja routera Gin
 	r := gin.Default()

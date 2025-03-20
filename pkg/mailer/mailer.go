@@ -90,8 +90,15 @@ func sendEmail(to, subject, body string) error {
 	message += "\r\n"
 	message += body
 
+	// Sprawdź czy port jest poprawny
+	if config.Port <= 0 {
+		log.Printf("Błąd konfiguracji SMTP: nieprawidłowy port: %d", config.Port)
+		return fmt.Errorf("nieprawidłowy port SMTP: %d", config.Port)
+	}
+
 	// Adres SMTP w formacie host:port
 	addr := fmt.Sprintf("%s:%d", config.Host, config.Port)
+	log.Printf("Próba połączenia z serwerem SMTP: %s", addr)
 
 	// Uwierzytelnienie
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.Host)

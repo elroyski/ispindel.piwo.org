@@ -68,7 +68,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	}
 
 	// Przekieruj do strony logowania z informacją o konieczności aktywacji
-	c.Redirect(http.StatusSeeOther, "/auth/login?registered=true&activation=true")
+	c.Redirect(http.StatusSeeOther, "/auth/login?registered=true")
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {

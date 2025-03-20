@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"time"
+	"log"
 
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/pkg/auth"
@@ -53,8 +54,8 @@ func (s *UserService) Register(name, email, password, ip string) error {
 	err = mailer.SendActivationEmail(email, name, activationToken)
 	if err != nil {
 		// Logujemy błąd, ale nie przerywamy rejestracji
-		// W prawdziwej aplikacji można rozważyć jakiś mechanizm ponownego wysyłania
-		return errors.New("konto zostało utworzone, ale nie mogliśmy wysłać e-maila aktywacyjnego. Skontaktuj się z administracją")
+		log.Printf("Błąd wysyłania e-maila aktywacyjnego do %s: %v", email, err)
+		return errors.New("konto zostało utworzone, ale nie mogliśmy wysłać e-maila aktywacyjnego. Możesz poprosić o ponowne wysłanie e-maila z linkiem aktywacyjnym")
 	}
 
 	return nil
