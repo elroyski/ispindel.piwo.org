@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"log"
 
 	"github.com/gin-gonic/gin"
 	"ispindel.piwo.org/internal/handlers"
@@ -88,8 +91,18 @@ func main() {
 		})
 	})
 
+	// Pobierz port z zmiennej środowiskowej lub ustaw domyślną wartość
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "49330" // Domyślny port
+		log.Println("Używam domyślnego portu:", port)
+	} else {
+		log.Println("Używam portu z zmiennej środowiskowej:", port)
+	}
+
 	// Uruchomienie serwera
-	if err := r.Run(":8080"); err != nil {
+	log.Printf("Uruchamianie serwera na porcie :%s...", port)
+	if err := r.Run(fmt.Sprintf(":%s", port)); err != nil {
 		panic(err)
 	}
 } 
