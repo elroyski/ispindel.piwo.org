@@ -67,15 +67,17 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	// Przekieruj do strony logowania
-	c.Redirect(http.StatusSeeOther, "/auth/login?registered=true")
+	// Przekieruj do strony logowania z informacją o konieczności aktywacji
+	c.Redirect(http.StatusSeeOther, "/auth/login?registered=true&activation=true")
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
 	if c.Request.Method == "GET" {
 		registered := c.Query("registered") == "true"
+		activation := c.Query("activation") == "true"
 		c.HTML(http.StatusOK, "login.html", gin.H{
 			"registered": registered,
+			"activation": activation,
 		})
 		return
 	}
@@ -117,4 +119,53 @@ func (h *AuthHandler) Login(c *gin.Context) {
 func (h *AuthHandler) Logout(c *gin.Context) {
 	c.SetCookie("token", "", -1, "/", "", false, true)
 	c.Redirect(http.StatusSeeOther, "/")
+}
+
+func (h *AuthHandler) Activate(c *gin.Context) {
+	token := c.Query("token")
+	if token == "" {
+		c.HTML(http.StatusBadRequest, "activation.html", gin.H{
+			"error": "Brak tokenu aktywacyjnego",
+		})
+		return
+	}
+
+	err := h.userService.ActivateAccount(token)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "activation.html", gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.HTML(http.StatusOK, "activation.html", gin.H{
+		"success": "Konto zostało pomyślnie aktywowane! Możesz się teraz zalogować.",
+	})
+}
+
+func (h *AuthHandler) ResendActivation(c *gin.Context) {
+	if c.Request.Method == "GET" {
+		c.HTML(http.StatusOK, "resend_activation.html", nil)
+		return
+	}
+
+	email := c.PostForm("email")
+	if email == "" {
+		c.HTML(http.StatusBadRequest, "resend_activation.html", gin.H{
+			"error": "Adres email jest wymagany",
+		})
+		return
+	}
+
+	err := h.userService.ResendActivationEmail(email)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "resend_activation.html", gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.HTML(http.StatusOK, "resend_activation.html", gin.H{
+		"success": "Email aktywacyjny został wysłany ponownie. Sprawdź swoją skrzynkę pocztową.",
+	})
 } 

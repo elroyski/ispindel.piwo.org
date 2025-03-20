@@ -69,6 +69,11 @@ func main() {
 		auth.GET("/register", authHandler.Register)
 		auth.POST("/register", authHandler.Register)
 		auth.GET("/logout", authHandler.Logout)
+		auth.GET("/activate", authHandler.Activate)
+		auth.GET("/resend-activation", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "resend_activation.html", gin.H{})
+		})
+		auth.POST("/resend-activation", authHandler.ResendActivation)
 	}
 
 	// Strona główna

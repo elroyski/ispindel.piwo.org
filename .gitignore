@@ -24,7 +24,7 @@ go.work
 *.swo
 
 # Environment variables
-.env
+#.env
 
 # Binary files
 bin/

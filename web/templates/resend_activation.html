@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ponowne wysłanie aktywacji - iSpindel</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Ponowne wysłanie e-maila aktywacyjnego</h1>
+        
+        {{ if .error }}
+        <div class="alert alert-danger">
+            {{ .error }}
+        </div>
+        {{ end }}
+        
+        {{ if .success }}
+        <div class="alert alert-success">
+            {{ .success }}
+        </div>
+        {{ else }}
+        <p>
+            Wpisz swój adres e-mail, aby otrzymać nowy link aktywacyjny.
+        </p>
+        
+        <form method="post" action="/auth/resend-activation">
+            <div class="form-group">
+                <label for="email">Adres e-mail</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Wyślij ponownie</button>
+            </div>
+        </form>
+        {{ end }}
+        
+        <p>
+            <a href="/auth/login">Powrót do logowania</a>
+        </p>
+    </div>
+</body>
+</html> 

@@ -41,7 +41,12 @@
                         {{end}}
                         {{if .registered}}
                         <div class="alert alert-success" role="alert">
-                            Rejestracja zakończona sukcesem! Możesz się teraz zalogować.
+                            Rejestracja zakończona sukcesem! Sprawdź swoją skrzynkę e-mail, aby aktywować konto.
+                        </div>
+                        {{end}}
+                        {{if .activated}}
+                        <div class="alert alert-success" role="alert">
+                            Konto zostało pomyślnie aktywowane! Możesz się teraz zalogować.
                         </div>
                         {{end}}
                         <form action="/auth/login" method="POST">
@@ -59,6 +64,7 @@
                         </form>
                         <div class="text-center mt-3">
                             <p>Nie masz jeszcze konta? <a href="/auth/register">Zarejestruj się</a></p>
+                            <p>Nie otrzymałeś e-maila aktywacyjnego? <a href="/auth/resend-activation">Wyślij ponownie</a></p>
                         </div>
                     </div>
                 </div>
