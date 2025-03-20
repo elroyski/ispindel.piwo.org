@@ -35,8 +35,17 @@ func InitMailer() {
 func SendActivationEmail(to, name, token string) error {
 	subject := "Aktywacja konta iSpindel"
 	
-	baseURL := getEnvOrDefault("APP_URL", "https://ispindle.piwo.org")
+	// Pobierz bazowy URL i wyraźnie go zaloguj
+	baseURL := os.Getenv("APP_URL")
+	if baseURL == "" {
+		baseURL = "https://ispindle.piwo.org"
+		log.Printf("UWAGA: Zmienna APP_URL nie jest ustawiona. Używam domyślnej wartości: %s", baseURL)
+	} else {
+		log.Printf("Używam zmiennej APP_URL: %s", baseURL)
+	}
+	
 	activationURL := fmt.Sprintf("%s/auth/activate?token=%s", baseURL, token)
+	log.Printf("Generuję link aktywacyjny: %s", activationURL)
 	
 	body := fmt.Sprintf(`Cześć %s,
 
@@ -59,8 +68,17 @@ Zespół iSpindel
 func SendPasswordResetEmail(to, name, token string) error {
 	subject := "Reset hasła iSpindel"
 	
-	baseURL := getEnvOrDefault("APP_URL", "https://ispindle.piwo.org")
+	// Pobierz bazowy URL i wyraźnie go zaloguj
+	baseURL := os.Getenv("APP_URL")
+	if baseURL == "" {
+		baseURL = "https://ispindel.piwo.org"
+		log.Printf("UWAGA: Zmienna APP_URL nie jest ustawiona. Używam domyślnej wartości: %s", baseURL)
+	} else {
+		log.Printf("Używam zmiennej APP_URL: %s", baseURL)
+	}
+	
 	resetURL := fmt.Sprintf("%s/auth/reset-password?token=%s", baseURL, token)
+	log.Printf("Generuję link do resetowania hasła: %s", resetURL)
 	
 	body := fmt.Sprintf(`Cześć %s,
 

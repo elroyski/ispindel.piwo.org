@@ -114,10 +114,13 @@ func main() {
 	if appURL == "" {
 		appURL = "https://ispindle.piwo.org"
 		os.Setenv("APP_URL", appURL)
-		log.Println("Używam domyślnego URL aplikacji:", appURL)
+		log.Println("Ustawiam domyślny URL aplikacji:", appURL)
 	} else {
 		log.Println("Używam URL aplikacji z zmiennej środowiskowej:", appURL)
 	}
+	
+	// Dodatkowe sprawdzenie zmiennej APP_URL
+	log.Printf("Ostateczna wartość APP_URL: %s", os.Getenv("APP_URL"))
 
 	// Uruchomienie serwera
 	log.Printf("Uruchamianie serwera na porcie :%s...", port)
