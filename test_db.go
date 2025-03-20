@@ -10,14 +10,15 @@ import (
 func main() {
 	// Test połączenia 1 - standardowy format DSN
 	host := "pgsql18.mydevil.net"
-	user := "p1270_ispindle"
+	user1 := "p1270_ispindle"
+	user2 := "p1270"    // Alternatywna nazwa użytkownika
 	password := "Kochanapysia1"
 	dbname := "p1270_ispindle"
 	port := "5432"
-
+	
 	// Format 1
 	dsn1 := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		host, user, password, dbname, port)
+		host, user1, password, dbname, port)
 	fmt.Println("Próba połączenia (format 1):", dsn1)
 	db1, err := sql.Open("postgres", dsn1)
 	if err != nil {
@@ -31,10 +32,10 @@ func main() {
 		}
 		db1.Close()
 	}
-
+	
 	// Format 2
 	dsn2 := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable",
-		user, password, host, port, dbname)
+		user1, password, host, port, dbname)
 	fmt.Println("\nPróba połączenia (format 2):", dsn2)
 	db2, err := sql.Open("postgres", dsn2)
 	if err != nil {
@@ -48,107 +49,38 @@ func main() {
 		}
 		db2.Close()
 	}
-
-	// Format 3 - sslmode=prefer
-	dsn3 := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=prefer",
-		host, user, password, dbname, port)
-	fmt.Println("\nPróba połączenia (format 3):", dsn3)
-	db3, err := sql.Open("postgres", dsn3)
+	
+	// Format 9 - użytkownik p1270
+	dsn9 := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		host, user2, password, dbname, port)
+	fmt.Println("\nPróba połączenia (format 9 - użytkownik p1270):", dsn9)
+	db9, err := sql.Open("postgres", dsn9)
 	if err != nil {
-		fmt.Println("Błąd otwarcia połączenia 3:", err)
+		fmt.Println("Błąd otwarcia połączenia 9:", err)
 	} else {
-		err = db3.Ping()
+		err = db9.Ping()
 		if err != nil {
-			fmt.Println("Błąd ping połączenia 3:", err)
+			fmt.Println("Błąd ping połączenia 9:", err)
 		} else {
-			fmt.Println("Połączenie 3 udane!")
+			fmt.Println("Połączenie 9 udane!")
 		}
-		db3.Close()
-	}
-
-	// Format 4 - bez żadnych parametrów SSL
-	dsn4 := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s",
-		host, user, password, dbname, port)
-	fmt.Println("\nPróba połączenia (format 4):", dsn4)
-	db4, err := sql.Open("postgres", dsn4)
-	if err != nil {
-		fmt.Println("Błąd otwarcia połączenia 4:", err)
-	} else {
-		err = db4.Ping()
-		if err != nil {
-			fmt.Println("Błąd ping połączenia 4:", err)
-		} else {
-			fmt.Println("Połączenie 4 udane!")
-		}
-		db4.Close()
+		db9.Close()
 	}
 	
-	// Format 5 - sslmode=require
-	dsn5 := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require",
-		host, user, password, dbname, port)
-	fmt.Println("\nPróba połączenia (format 5):", dsn5)
-	db5, err := sql.Open("postgres", dsn5)
+	// Format 10 - użytkownik p1270, URL style
+	dsn10 := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable",
+		user2, password, host, port, dbname)
+	fmt.Println("\nPróba połączenia (format 10 - URL z użytkownikiem p1270):", dsn10)
+	db10, err := sql.Open("postgres", dsn10)
 	if err != nil {
-		fmt.Println("Błąd otwarcia połączenia 5:", err)
+		fmt.Println("Błąd otwarcia połączenia 10:", err)
 	} else {
-		err = db5.Ping()
+		err = db10.Ping()
 		if err != nil {
-			fmt.Println("Błąd ping połączenia 5:", err)
+			fmt.Println("Błąd ping połączenia 10:", err)
 		} else {
-			fmt.Println("Połączenie 5 udane!")
+			fmt.Println("Połączenie 10 udane!")
 		}
-		db5.Close()
-	}
-	
-	// Format 6 - search_path=public
-	dsn6 := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require search_path=public",
-		host, user, password, dbname, port)
-	fmt.Println("\nPróba połączenia (format 6):", dsn6)
-	db6, err := sql.Open("postgres", dsn6)
-	if err != nil {
-		fmt.Println("Błąd otwarcia połączenia 6:", err)
-	} else {
-		err = db6.Ping()
-		if err != nil {
-			fmt.Println("Błąd ping połączenia 6:", err)
-		} else {
-			fmt.Println("Połączenie 6 udane!")
-		}
-		db6.Close()
-	}
-	
-	// Format 7 - inna nazwa użytkownika
-	altUser := "piwo_p1270_ispindle"
-	dsn7 := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require",
-		host, altUser, password, dbname, port)
-	fmt.Println("\nPróba połączenia (format 7 - alternatywna nazwa użytkownika):", dsn7)
-	db7, err := sql.Open("postgres", dsn7)
-	if err != nil {
-		fmt.Println("Błąd otwarcia połączenia 7:", err)
-	} else {
-		err = db7.Ping()
-		if err != nil {
-			fmt.Println("Błąd ping połączenia 7:", err)
-		} else {
-			fmt.Println("Połączenie 7 udane!")
-		}
-		db7.Close()
-	}
-	
-	// Format 8 - inna nazwa użytkownika, bez SSL
-	dsn8 := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		host, altUser, password, dbname, port)
-	fmt.Println("\nPróba połączenia (format 8 - alternatywna nazwa użytkownika, bez SSL):", dsn8)
-	db8, err := sql.Open("postgres", dsn8)
-	if err != nil {
-		fmt.Println("Błąd otwarcia połączenia 8:", err)
-	} else {
-		err = db8.Ping()
-		if err != nil {
-			fmt.Println("Błąd ping połączenia 8:", err)
-		} else {
-			fmt.Println("Połączenie 8 udane!")
-		}
-		db8.Close()
+		db10.Close()
 	}
 } 

@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"ispindel.piwo.org/internal/models"
 )
@@ -13,55 +13,29 @@ import (
 var DB *gorm.DB
 
 func InitDB() {
-	host := getEnvOrDefault("DB_HOST", "pgsql18.mydevil.net")
-	user := getEnvOrDefault("DB_USER", "p1270_ispindle")
+	host := getEnvOrDefault("DB_HOST", "mysql18.mydevil.net")
+	user := getEnvOrDefault("DB_USER", "m1270_ispindel")
 	password := getEnvOrDefault("DB_PASSWORD", "Kochanapysia1")
-	dbname := getEnvOrDefault("DB_NAME", "p1270_ispindle")
-	port := getEnvOrDefault("DB_PORT", "5432")
+	dbname := getEnvOrDefault("DB_NAME", "m1270_ispindel")
+	port := getEnvOrDefault("DB_PORT", "3306")
 
-	log.Printf("Próba połączenia z bazą danych:")
+	log.Printf("Próba połączenia z bazą danych MySQL:")
 	log.Printf("Host: %s", host)
 	log.Printf("User: %s", user)
 	log.Printf("Database: %s", dbname)
 	log.Printf("Port: %s", port)
 
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname)
-	log.Printf("Próba połączenia 1: %s", dsn)
+	// Format DSN dla MySQL: [username[:password]@][protocol[(address)]]/dbname[?param1=value1&...&paramN=valueN]
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		user, password, host, port, dbname)
+	log.Printf("Próba połączenia MySQL: %s", dsn)
 	
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Printf("Połączenie 1 nieudane: %v", err)
-		
-		dsn = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-			user, password, host, port, dbname)
-		log.Printf("Próba połączenia 2: %s", dsn)
-		
-		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-		if err != nil {
-			log.Printf("Połączenie 2 nieudane: %v", err)
-			
-			dsn = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable client_encoding=UTF8",
-				host, port, user, password, dbname)
-			log.Printf("Próba połączenia 3: %s", dsn)
-			
-			db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-			if err != nil {
-				log.Printf("Połączenie 3 nieudane: %v", err)
-				
-				dsn = fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s",
-					user, password, host, port, dbname)
-				log.Printf("Próba połączenia 4: %s", dsn)
-				
-				db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-				if err != nil {
-					log.Fatal("Wszystkie próby połączenia nieudane:", err)
-				}
-			}
-		}
+		log.Fatal("Nie udało się połączyć z bazą danych MySQL:", err)
 	}
 
-	log.Println("Połączenie z bazą danych udane!")
+	log.Println("Połączenie z bazą danych MySQL udane!")
 
 	err = db.AutoMigrate(&models.User{})
 	if err != nil {
