@@ -108,7 +108,7 @@ func main() {
 	} else {
 		log.Println("Używam portu z zmiennej środowiskowej:", port)
 	}
-
+//czemu nei zmiena url
 	// Ustaw zmienną środowiskową APP_URL jeśli nie jest ustawiona
 	appURL := os.Getenv("APP_URL")
 	if appURL == "" {
