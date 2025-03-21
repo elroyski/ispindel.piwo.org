@@ -80,9 +80,10 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                             <a href="/ispindels/{{ .ID }}" class="text-blue-600 hover:text-blue-900">Szczegóły</a>
                             <a href="/ispindels/{{ .ID }}/edit" class="text-indigo-600 hover:text-indigo-900">Edytuj</a>
-                            <form action="/ispindels/{{ .ID }}/delete" method="POST" class="inline">
-                                <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Czy na pewno chcesz usunąć to urządzenie?')">Usuń</button>
-                            </form>
+                            <button type="button" 
+                                    class="text-red-600 hover:text-red-900" 
+                                    onclick="deleteIspindel('{{ .ID }}', '{{ .Name }}')"
+                            >Usuń</button>
                         </td>
                     </tr>
                     {{ end }}
@@ -111,51 +112,44 @@
     </footer>
 
     <script>
-        // Funkcja do obsługi usuwania urządzenia
         function deleteIspindel(id, name) {
             if (confirm('Czy na pewno chcesz usunąć urządzenie ' + name + '?')) {
+                const formData = new FormData();
+                
                 fetch('/ispindels/' + id + '/delete', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
                 .then(response => {
-                    if (!response.ok) {
+                    if (response.headers.get('content-type')?.includes('application/json')) {
                         return response.json().then(data => {
-                            throw new Error(data.error || 'Wystąpił błąd podczas usuwania urządzenia');
+                            if (!response.ok) {
+                                throw new Error(data.error || 'Wystąpił błąd podczas usuwania urządzenia');
+                            }
+                            return data;
                         });
+                    } else {
+                        if (!response.ok) {
+                            throw new Error('Wystąpił błąd podczas usuwania urządzenia');
+                        }
+                        return response.text().then(() => ({ message: 'success' }));
                     }
-                    return response.json();
                 })
                 .then(data => {
                     if (data.message) {
-                        window.location.href = '/ispindels';
+                        window.location.reload();
                     } else {
                         throw new Error('Nieoczekiwana odpowiedź z serwera');
                     }
                 })
                 .catch(error => {
+                    console.error('Error:', error);
                     alert(error.message || 'Wystąpił błąd podczas usuwania urządzenia');
                 });
             }
-            return false;
         }
-
-        // Dodaj obsługę dla wszystkich przycisków usuwania
-        document.addEventListener('DOMContentLoaded', function() {
-            const deleteForms = document.querySelectorAll('form[action$="/delete"]');
-            deleteForms.forEach(form => {
-                form.onsubmit = function(e) {
-                    e.preventDefault();
-                    const id = form.action.split('/').slice(-2)[0];
-                    const nameElement = form.closest('tr').querySelector('.font-medium');
-                    const name = nameElement ? nameElement.textContent.trim() : 'to urządzenie';
-                    deleteIspindel(id, name);
-                };
-            });
-        });
     </script>
 </body>
 </html> 

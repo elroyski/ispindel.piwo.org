@@ -291,7 +291,7 @@ func (h *IspindelHandler) RegenerateAPIKey(c *gin.Context) {
 func (h *IspindelHandler) DeleteIspindel(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {
-		if c.GetHeader("Content-Type") == "application/json" {
+		if c.GetHeader("X-Requested-With") == "XMLHttpRequest" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Wymagane logowanie"})
 		} else {
 			c.Redirect(http.StatusSeeOther, "/auth/login")
@@ -302,7 +302,7 @@ func (h *IspindelHandler) DeleteIspindel(c *gin.Context) {
 	userModel := user.(*models.User)
 	ispindelID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		if c.GetHeader("Content-Type") == "application/json" {
+		if c.GetHeader("X-Requested-With") == "XMLHttpRequest" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Nieprawidłowy identyfikator urządzenia"})
 		} else {
 			c.HTML(http.StatusBadRequest, "error.html", gin.H{
@@ -315,7 +315,7 @@ func (h *IspindelHandler) DeleteIspindel(c *gin.Context) {
 
 	err = h.ispindelService.DeleteIspindel(uint(ispindelID), userModel.ID)
 	if err != nil {
-		if c.GetHeader("Content-Type") == "application/json" {
+		if c.GetHeader("X-Requested-With") == "XMLHttpRequest" {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Nie udało się usunąć urządzenia: " + err.Error()})
 		} else {
 			c.HTML(http.StatusInternalServerError, "error.html", gin.H{
@@ -326,7 +326,7 @@ func (h *IspindelHandler) DeleteIspindel(c *gin.Context) {
 		return
 	}
 
-	if c.GetHeader("Content-Type") == "application/json" {
+	if c.GetHeader("X-Requested-With") == "XMLHttpRequest" {
 		c.JSON(http.StatusOK, gin.H{"message": "Urządzenie zostało usunięte"})
 	} else {
 		c.Redirect(http.StatusSeeOther, "/ispindels")
