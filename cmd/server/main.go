@@ -96,6 +96,8 @@ func main() {
 
 	// API endpoint dostępny bez autentykacji
 	r.POST("/api/ispindel/:api_key", ispindelHandler.ReceiveData)
+	// Alternatywny endpoint (bez prefiksu /api/) dla kompatybilności z różnymi wersjami firmware
+	r.POST("/ispindel/:api_key", ispindelHandler.ReceiveData)
 
 	// Strona główna
 	r.GET("/", func(c *gin.Context) {

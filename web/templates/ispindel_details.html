@@ -85,6 +85,28 @@
                         </p>
                     </div>
                 </div>
+                
+                <div class="mt-4 bg-gray-50 p-4 rounded-md">
+                    <h3 class="font-medium text-gray-700 mb-2">Przykładowy format danych JSON</h3>
+                    <p class="text-sm mb-2">System spodziewa się danych w następującym formacie JSON:</p>
+                    <pre class="text-xs bg-gray-100 p-2 rounded overflow-auto max-h-48">
+{
+  "name": "iSpindel",
+  "ID": 123456,
+  "angle": 45.5,
+  "temperature": 20.5,
+  "temp_units": "C",
+  "battery": 3.8,
+  "gravity": 1.050,
+  "interval": 900,
+  "RSSI": -65,
+  "timestamp": "2023-05-30 12:34:56"
+}
+                    </pre>
+                    <p class="text-xs text-gray-600 mt-2">
+                        Nie wszystkie pola są wymagane. Urządzenie powinno automatycznie generować dane w prawidłowym formacie.
+                    </p>
+                </div>
             </div>
             
             <div class="mb-6">
