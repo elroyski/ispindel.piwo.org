@@ -71,6 +71,19 @@ func (s *IspindelService) GetIspindelsByUserID(userID uint) ([]models.Ispindel, 
 	if err := database.DB.Where("user_id = ?", userID).Find(&ispindels).Error; err != nil {
 		return nil, err
 	}
+
+	// Sprawdź i zaktualizuj stan aktywności każdego urządzenia
+	for _, ispindel := range ispindels {
+		if err := s.checkAndUpdateDeviceActivity(ispindel.ID); err != nil {
+			log.Printf("Błąd podczas aktualizacji stanu aktywności urządzenia %d: %v", ispindel.ID, err)
+		}
+	}
+
+	// Pobierz zaktualizowaną listę urządzeń
+	if err := database.DB.Where("user_id = ?", userID).Find(&ispindels).Error; err != nil {
+		return nil, err
+	}
+
 	return ispindels, nil
 }
 
@@ -223,6 +236,7 @@ func (s *IspindelService) SaveMeasurement(ispindelID uint, data map[string]inter
 	// Aktualizuj informacje o urządzeniu
 	updates := map[string]interface{}{
 		"last_seen": time.Now(),
+		"is_active": true, // Ustaw urządzenie jako aktywne gdy otrzymamy nowy pomiar
 	}
 	
 	// Dodaj DeviceID do aktualizacji jeśli jest dostępne
@@ -282,4 +296,36 @@ func (s *IspindelService) GetMeasurementsForIspindelInRange(ispindelID uint, sta
 	}
 
 	return measurements, nil
+}
+
+// checkAndUpdateDeviceActivity sprawdza i aktualizuje stan aktywności urządzenia
+func (s *IspindelService) checkAndUpdateDeviceActivity(ispindelID uint) error {
+	var ispindel models.Ispindel
+	if err := database.DB.First(&ispindel, ispindelID).Error; err != nil {
+		return err
+	}
+
+	// Pobierz maksymalny czas nieaktywności z zmiennej środowiskowej
+	inactivityTimeout := 6 // domyślna wartość 6 godzin
+	if envTimeout := os.Getenv("ISPINDEL_INACTIVITY_TIMEOUT"); envTimeout != "" {
+		if timeout, err := strconv.Atoi(envTimeout); err == nil {
+			inactivityTimeout = timeout
+		} else {
+			log.Printf("Błąd podczas parsowania ISPINDEL_INACTIVITY_TIMEOUT: %v, używam wartości domyślnej 6", err)
+		}
+	}
+
+	// Oblicz czas nieaktywności
+	inactivityDuration := time.Since(ispindel.LastSeen)
+	isInactive := inactivityDuration.Hours() >= float64(inactivityTimeout)
+
+	// Aktualizuj stan aktywności tylko jeśli się zmienił
+	if ispindel.IsActive && isInactive {
+		if err := database.DB.Model(&ispindel).Update("is_active", false).Error; err != nil {
+			return err
+		}
+		log.Printf("Urządzenie iSpindel %d zostało oznaczone jako nieaktywne z powodu braku aktywności przez %v godzin", ispindelID, inactivityTimeout)
+	}
+
+	return nil
 } 
