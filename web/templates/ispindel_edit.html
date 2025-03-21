@@ -74,58 +74,6 @@
             </form>
         </div>
         
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold mb-4">Konfiguracja HTTP</h2>
-            <p class="mb-4">Aby skonfigurować swoje urządzenie iSpindel do wysyłania danych do tego systemu:</p>
-            <ol class="list-decimal list-inside space-y-4">
-                <li>W konfiguracji iSpindel wybierz serwis "HTTP".</li>
-                <li class="flex items-center">
-                    <div>
-                        <span>Token: </span>
-                        <code class="bg-gray-100 px-2 py-1 rounded" id="apiToken">{{ .ispindel.APIKey }}</code>
-                        <button onclick="copyToClipboard('apiToken')" class="ml-2 text-gray-500 hover:text-gray-700" title="Kopiuj do schowka">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-12a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="text-sm text-gray-500 ml-6">W polu Token wprowadź klucz API</div>
-                </li>
-                <li class="flex items-center">
-                    <div>
-                        <span>Server Address: </span>
-                        <code class="bg-gray-100 px-2 py-1 rounded" id="serverAddress">ispindel.piwo.org</code>
-                        <button onclick="copyToClipboard('serverAddress')" class="ml-2 text-gray-500 hover:text-gray-700" title="Kopiuj do schowka">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-12a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="text-sm text-gray-500 ml-6">To jest adres domenowy serwera, bez http:// i SSL</div>
-                </li>
-                <li>Server Port: <code class="bg-gray-100 px-2 py-1 rounded">80</code>
-                    <div class="text-sm text-gray-500 ml-6">Port standardowy dla połączeń HTTP</div>
-                </li>
-                <li class="flex items-center">
-                    <div>
-                        <span>Server URL: </span>
-                        <code class="bg-gray-100 px-2 py-1 rounded" id="serverUrl">/api/ispindel</code>
-                        <button onclick="copyToClipboard('serverUrl')" class="ml-2 text-gray-500 hover:text-gray-700" title="Kopiuj do schowka">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-12a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="text-sm text-gray-500 ml-6">To jest ścieżka API na serwerze</div>
-                </li>
-                <li>Okres wysyłania danych: Minimalny czas między pomiarami (Interval) należy ustawić na 900 sekund (15 minut)</li>
-                <li>Czas aktywności iSpindel: Urządzenie które nie wyśle danych przez 6 godzin zostanie automatycznie przełączone w stan nieaktywny.</li>
-            </ol>
-            <div class="mt-4 text-sm text-yellow-600">
-                <strong>Uwaga:</strong> Ustawienia bazują na przykładowej konfiguracji iSpindel dla HTTP. Format może się różnić w zależności od wersji oprogramowania.
-            </div>
-        </div>
-        
         <div class="flex justify-between mt-6">
             <a href="/ispindels" class="text-blue-500 hover:text-blue-700">Powrót do listy urządzeń</a>
             <a href="/dashboard" class="text-blue-500 hover:text-blue-700">Panel użytkownika</a>
@@ -161,21 +109,6 @@
                 });
             }
         });
-
-        function copyToClipboard(elementId) {
-            const element = document.getElementById(elementId);
-            const text = element.textContent;
-            
-            navigator.clipboard.writeText(text).then(() => {
-                // Dodaj klasę dla efektu wizualnego
-                element.classList.add('bg-green-100');
-                setTimeout(() => {
-                    element.classList.remove('bg-green-100');
-                }, 500);
-            }).catch(err => {
-                console.error('Błąd podczas kopiowania:', err);
-            });
-        }
     </script>
 </body>
 </html> 
