@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
@@ -26,19 +27,35 @@ func NewFermentationHandler() *FermentationHandler {
 
 // GetBeerStyles pobiera style piwa z pliku JSON
 func (h *FermentationHandler) GetBeerStyles() ([]map[string]string, error) {
-	// Ścieżka do pliku stylów piwa
-	filePath := filepath.Join("beer_styles.json")
+	// Możliwe lokalizacje pliku stylów piwa
+	possiblePaths := []string{
+		filepath.Join("static", "data", "beer_styles.json"),
+		filepath.Join("beer_styles.json"),
+	}
 
-	// Odczytaj plik JSON
-	fileContent, err := ioutil.ReadFile(filePath)
+	var fileContent []byte
+	var err error
+	var loadedPath string
+
+	// Próbuj odczytać plik z różnych lokalizacji
+	for _, path := range possiblePaths {
+		fileContent, err = ioutil.ReadFile(path)
+		if err == nil {
+			loadedPath = path
+			break
+		}
+	}
+
+	// Jeśli plik nie został znaleziony, zwróć przyjazny komunikat błędu
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("nie można znaleźć pliku ze stylami piwa. Spróbuj wykonać: "+
+			"wget -O static/data/beer_styles.json https://raw.githubusercontent.com/beerjson/bjcp-json/main/styles/bjcp_styleguide-2021.json")
 	}
 
 	// Parsowanie JSON
 	var data map[string]interface{}
 	if err := json.Unmarshal(fileContent, &data); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("błąd parsowania pliku JSON ze stylami piwa (%s): %v", loadedPath, err)
 	}
 
 	// Pobieranie stylów piwa
