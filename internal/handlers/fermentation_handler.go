@@ -339,12 +339,22 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		}
 		
 		// Pobierz dane pomiarowe z okresu fermentacji
-		measurements, err = h.IspindelService.GetMeasurementsForIspindelInRange(fermentation.IspindelID, startTime, endTime, 100)
+		measurements, err = h.IspindelService.GetMeasurementsForIspindelInRange(fermentation.IspindelID, startTime, endTime, 15)
 		if err == nil && len(measurements) > 0 {
 			hasData = true
 			
-			// Przygotuj dane do wykresów
-			for _, m := range measurements {
+			// Kopiujemy pomiary dla wykresów i odwracamy ich kolejność,
+			// żeby były w porządku chronologicznym
+			measurementsForCharts := make([]models.Measurement, len(measurements))
+			copy(measurementsForCharts, measurements)
+			
+			// Odwracamy kolejność dla wykresów - chcemy je wyświetlać chronologicznie
+			for i, j := 0, len(measurementsForCharts)-1; i < j; i, j = i+1, j-1 {
+				measurementsForCharts[i], measurementsForCharts[j] = measurementsForCharts[j], measurementsForCharts[i]
+			}
+			
+			// Przygotuj dane do wykresów w chronologicznej kolejności
+			for _, m := range measurementsForCharts {
 				timestamps = append(timestamps, m.Timestamp.Format("02.01 15:04"))
 				temperatures = append(temperatures, m.Temperature)
 				gravities = append(gravities, m.Gravity)
