@@ -216,6 +216,11 @@ func (s *IspindelService) SaveMeasurement(ispindelID uint, data map[string]inter
 	if deviceIDStr != "" {
 		updates["device_id"] = deviceIDStr
 	}
+
+	// Dodaj Name do aktualizacji jeśli jest dostępne
+	if name, ok := data["name"].(string); ok && name != "" {
+		updates["name"] = name
+	}
 	
 	if err := database.DB.Model(&models.Ispindel{}).Where("id = ?", ispindelID).Updates(updates).Error; err != nil {
 		log.Printf("Błąd podczas aktualizacji informacji o urządzeniu: %v", err)
