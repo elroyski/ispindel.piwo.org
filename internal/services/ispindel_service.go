@@ -176,9 +176,13 @@ func (s *IspindelService) SaveMeasurement(ispindelID uint, data map[string]inter
 	if name, ok := data["name"].(string); ok {
 		measurement.Name = name
 	}
+	
+	var deviceIDStr string
 	if deviceID, ok := data["ID"].(float64); ok {
 		measurement.DeviceID = uint(deviceID)
+		deviceIDStr = fmt.Sprintf("%.0f", deviceID)
 	}
+	
 	if angle, ok := data["angle"].(float64); ok {
 		measurement.Angle = angle
 	}
@@ -203,9 +207,18 @@ func (s *IspindelService) SaveMeasurement(ispindelID uint, data map[string]inter
 		return nil, fmt.Errorf("błąd podczas zapisywania pomiaru: %v", err)
 	}
 
-	// Zaktualizuj czas ostatniej aktywności urządzenia
-	if err := database.DB.Model(&models.Ispindel{}).Where("id = ?", ispindelID).Update("last_seen", time.Now()).Error; err != nil {
-		log.Printf("Błąd podczas aktualizacji czasu ostatniej aktywności urządzenia: %v", err)
+	// Aktualizuj informacje o urządzeniu
+	updates := map[string]interface{}{
+		"last_seen": time.Now(),
+	}
+	
+	// Dodaj DeviceID do aktualizacji jeśli jest dostępne
+	if deviceIDStr != "" {
+		updates["device_id"] = deviceIDStr
+	}
+	
+	if err := database.DB.Model(&models.Ispindel{}).Where("id = ?", ispindelID).Updates(updates).Error; err != nil {
+		log.Printf("Błąd podczas aktualizacji informacji o urządzeniu: %v", err)
 	}
 
 	return measurement, nil
