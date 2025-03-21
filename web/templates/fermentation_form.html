@@ -93,8 +93,18 @@
                             <p class="text-gray-500 text-xs mt-1">Wymagane pole. Wybierz urządzenie iSpindel, które będzie monitorować fermentację.</p>
                         {{else}}
                             <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
-                                <p>Nie masz jeszcze aktywnych urządzeń iSpindel.</p>
-                                <a href="/ispindels/new" class="text-blue-600 hover:underline mt-2 inline-block">Dodaj nowe urządzenie</a>
+                                <p>Nie masz dostępnych urządzeń iSpindel do użycia.</p>
+                                {{if .usedIspindels}}
+                                    <p class="mt-2">Wszystkie Twoje aktywne urządzenia są już używane w innych fermentacjach:</p>
+                                    <ul class="list-disc list-inside mt-1">
+                                        {{range .usedIspindels}}
+                                            <li>{{.Name}} {{if .Description}}({{.Description}}){{end}}</li>
+                                        {{end}}
+                                    </ul>
+                                    <p class="mt-2">Najpierw zakończ aktywną fermentację lub dodaj nowe urządzenie.</p>
+                                {{else}}
+                                    <a href="/ispindels/new" class="text-blue-600 hover:underline mt-2 inline-block">Dodaj nowe urządzenie</a>
+                                {{end}}
                             </div>
                         {{end}}
                     </div>

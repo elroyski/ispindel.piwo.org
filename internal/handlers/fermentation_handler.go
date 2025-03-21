@@ -127,11 +127,38 @@ func (h *FermentationHandler) NewFermentationForm(c *gin.Context) {
 
 	userModel := user.(*models.User)
 
-	// Pobierz aktywne urządzenia iSpindel użytkownika
+	// Pobierz aktywne urządzenia iSpindel użytkownika (niewykorzystane w aktywnych fermentacjach)
 	activeIspindels, err := h.FermentationService.GetActiveIspindelsForUser(userModel.ID)
 	if err != nil {
 		c.HTML(http.StatusInternalServerError, "error.html", gin.H{"error": "Błąd podczas pobierania urządzeń: " + err.Error()})
 		return
+	}
+
+	// Pobierz wszystkie urządzenia iSpindel użytkownika
+	allIspindels, err := h.IspindelService.GetIspindelsByUserID(userModel.ID)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", gin.H{"error": "Błąd podczas pobierania urządzeń: " + err.Error()})
+		return
+	}
+
+	// Znajdź urządzenia, które są aktywne, ale już wykorzystywane w fermentacjach
+	var usedIspindels []models.Ispindel
+	for _, isp := range allIspindels {
+		if !isp.IsActive {
+			continue
+		}
+
+		isUsed := true
+		for _, availableIsp := range activeIspindels {
+			if availableIsp.ID == isp.ID {
+				isUsed = false
+				break
+			}
+		}
+
+		if isUsed {
+			usedIspindels = append(usedIspindels, isp)
+		}
 	}
 
 	// Pobierz style piwa
@@ -143,11 +170,12 @@ func (h *FermentationHandler) NewFermentationForm(c *gin.Context) {
 
 	// Renderuj formularz nowej fermentacji
 	c.HTML(http.StatusOK, "fermentation_form.html", gin.H{
-		"user":          userModel,
+		"user":           userModel,
 		"activeIspindels": activeIspindels,
-		"beerStyles":    beerStyles,
-		"formTitle":     "Nowa fermentacja",
-		"submitButton":  "Rozpocznij fermentację",
+		"usedIspindels":  usedIspindels,
+		"beerStyles":     beerStyles,
+		"formTitle":      "Nowa fermentacja",
+		"submitButton":   "Rozpocznij fermentację",
 	})
 }
 

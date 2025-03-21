@@ -101,10 +101,45 @@ func (s *FermentationService) EndFermentation(fermentationID, userID uint) error
 }
 
 // GetActiveIspindelsForUser zwraca listę aktywnych urządzeń iSpindel dla użytkownika
+// które nie są już używane w aktywnych fermentacjach
 func (s *FermentationService) GetActiveIspindelsForUser(userID uint) ([]models.Ispindel, error) {
 	var ispindels []models.Ispindel
 	if err := database.DB.Where("user_id = ? AND is_active = ?", userID, true).Find(&ispindels).Error; err != nil {
 		return nil, err
 	}
-	return ispindels, nil
+	
+	// Jeśli nie znaleziono urządzeń, zwróć pustą listę
+	if len(ispindels) == 0 {
+		return ispindels, nil
+	}
+	
+	// Pobierz ID urządzeń używanych w aktywnych fermentacjach
+	var usedIspindelIDs []uint
+	if err := database.DB.Model(&models.Fermentation{}).
+		Where("user_id = ? AND is_active = ?", userID, true).
+		Pluck("ispindel_id", &usedIspindelIDs).Error; err != nil {
+		return nil, err
+	}
+	
+	// Jeśli nie ma aktywnych fermentacji, zwróć wszystkie aktywne urządzenia
+	if len(usedIspindelIDs) == 0 {
+		return ispindels, nil
+	}
+	
+	// Filtruj urządzenia, które są już używane
+	var availableIspindels []models.Ispindel
+	for _, ispindel := range ispindels {
+		isUsed := false
+		for _, usedID := range usedIspindelIDs {
+			if ispindel.ID == usedID {
+				isUsed = true
+				break
+			}
+		}
+		if !isUsed {
+			availableIspindels = append(availableIspindels, ispindel)
+		}
+	}
+	
+	return availableIspindels, nil
 } 
