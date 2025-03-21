@@ -98,6 +98,8 @@ func main() {
 	r.POST("/api/ispindel/:api_key", ispindelHandler.ReceiveData)
 	// Alternatywny endpoint (bez prefiksu /api/) dla kompatybilności z różnymi wersjami firmware
 	r.POST("/ispindel/:api_key", ispindelHandler.ReceiveData)
+	// Endpoint dla iSpindel, który wysyła dane bez klucza API w ścieżce
+	r.POST("/api/ispindel", ispindelHandler.ReceiveDataNoAPIKey)
 
 	// Strona główna
 	r.GET("/", func(c *gin.Context) {

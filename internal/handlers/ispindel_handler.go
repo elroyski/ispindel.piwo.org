@@ -406,4 +406,91 @@ func (h *IspindelHandler) ReceiveData(c *gin.Context) {
 		"measurement": measurement,
 		"time":        time.Now(),
 	})
+}
+
+// ReceiveDataNoAPIKey obsługuje dane z urządzeń iSpindel, które nie przekazują klucza API w ścieżce URL
+func (h *IspindelHandler) ReceiveDataNoAPIKey(c *gin.Context) {
+	// Odczytaj dane JSON z ciała żądania
+	var data map[string]interface{}
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		log.Printf("Błąd odczytu danych z żądania bez klucza API w URL: %s", err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nie udało się odczytać danych"})
+		return
+	}
+
+	// Wyświetl otrzymane dane w logach
+	log.Printf("Otrzymano dane bez klucza API w URL: %s", string(body))
+
+	// Próba odczytania klucza API z nagłówka
+	apiKey := c.GetHeader("X-API-KEY")
+	if apiKey == "" {
+		apiKey = c.GetHeader("API-KEY")
+	}
+
+	if apiKey == "" {
+		// Próba odczytania klucza API z danych JSON
+		err = json.Unmarshal(body, &data)
+		if err != nil {
+			log.Printf("Nieprawidłowy format danych JSON bez klucza API w URL: %s", err.Error())
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Nieprawidłowy format danych JSON"})
+			return
+		}
+
+		// Sprawdzanie różnych możliwych nazw pola z kluczem API
+		if val, ok := data["api_key"].(string); ok && val != "" {
+			apiKey = val
+		} else if val, ok := data["apikey"].(string); ok && val != "" {
+			apiKey = val
+		} else if val, ok := data["token"].(string); ok && val != "" {
+			apiKey = val
+		}
+	}
+
+	// Jeśli nadal brak klucza API
+	if apiKey == "" {
+		log.Printf("Brak klucza API w żądaniu (ani w URL, nagłówkach ani w danych JSON)")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Brak klucza API"})
+		return
+	}
+
+	// Znajdź urządzenie po kluczu API
+	ispindel, err := h.ispindelService.FindIspindelByAPIKey(apiKey)
+	if err != nil {
+		log.Printf("Nieprawidłowy klucz API: %s, błąd: %s", apiKey, err.Error())
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Nieprawidłowy klucz API"})
+		return
+	}
+
+	// Loguj informację o otrzymanym żądaniu
+	log.Printf("Odebrano dane bez klucza API w URL dla urządzenia: %s (ID: %d) od adresu IP: %s", 
+		ispindel.Name, ispindel.ID, c.ClientIP())
+
+	// Jeśli wcześniej nie udało się odczytać danych JSON, spróbuj ponownie
+	if data == nil {
+		err = json.Unmarshal(body, &data)
+		if err != nil {
+			log.Printf("Nieprawidłowy format danych JSON bez klucza API w URL: %s", err.Error())
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Nieprawidłowy format danych JSON"})
+			return
+		}
+	}
+
+	// Zapisz pomiar
+	measurement, err := h.ispindelService.SaveMeasurement(ispindel.ID, data)
+	if err != nil {
+		log.Printf("Błąd zapisywania pomiaru bez klucza API w URL: %s, dane: %v", err.Error(), data)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Nie udało się zapisać danych: " + err.Error()})
+		return
+	}
+
+	log.Printf("Pomyślnie zapisano pomiar dla urządzenia bez klucza API w URL: %s, temp: %.2f°, gęstość: %.4f", 
+		ispindel.Name, measurement.Temperature, measurement.Gravity)
+		
+	c.JSON(http.StatusOK, gin.H{
+		"success":     true,
+		"message":     "Pomyślnie zapisano dane",
+		"measurement": measurement,
+		"time":        time.Now(),
+	})
 } 
