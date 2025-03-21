@@ -34,14 +34,6 @@
                 </div>
                 
                 <div class="mb-4">
-                    <label for="deviceID" class="block text-gray-700 text-sm font-bold mb-2">ID urządzenia:</label>
-                    <input type="text" id="deviceID" name="deviceID" value="{{ .ispindel.DeviceID }}" 
-                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
-                           required>
-                    <p class="text-sm text-gray-500 mt-1">Identyfikator urządzenia musi odpowiadać nazwie ustawionej w samym urządzeniu iSpindel.</p>
-                </div>
-                
-                <div class="mb-4">
                     <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Opis (opcjonalnie):</label>
                     <textarea id="description" name="description" 
                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24">{{ .ispindel.Description }}</textarea>
