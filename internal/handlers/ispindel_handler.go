@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/internal/services"
 )
