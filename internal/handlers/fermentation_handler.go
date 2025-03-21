@@ -321,7 +321,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 	// Pobierz dane pomiarowe dla iSpindel przypisanego do tej fermentacji
 	var measurements []models.Measurement
 	var hasData bool
-	var timestamps, temperatures, gravities, angles, batteries []interface{}
+	var timestamps, temperatures, gravities, angles, batteries, rssi []interface{}
 	
 	if fermentation.IspindelID > 0 {
 		// Pobierz dane pomiarowe dla tego urządzenia
@@ -350,6 +350,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 				gravities = append(gravities, m.Gravity)
 				angles = append(angles, m.Angle)
 				batteries = append(batteries, m.Battery)
+				rssi = append(rssi, m.RSSI)
 			}
 		}
 	}
@@ -365,6 +366,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		"gravities":    gravities,
 		"angles":       angles,
 		"batteries":    batteries,
+		"rssi":         rssi,
 	})
 }
 
