@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/internal/services"
 )
@@ -226,7 +227,7 @@ func (h *IspindelHandler) UpdateIspindel(c *gin.Context) {
 			"user":        userModel,
 			"error":       "Nazwa urządzenia jest wymagana",
 			"title":       "Edytuj urządzenie iSpindel",
-			"ispindel":    &models.Ispindel{ID: uint(ispindelID)},
+			"ispindel":    &models.Ispindel{Model: gorm.Model{ID: uint(ispindelID)}},
 			"name":        name,
 			"description": description,
 			"isActive":    isActive,
@@ -241,7 +242,7 @@ func (h *IspindelHandler) UpdateIspindel(c *gin.Context) {
 			"user":        userModel,
 			"error":       "Nie udało się zaktualizować urządzenia: " + err.Error(),
 			"title":       "Edytuj urządzenie iSpindel",
-			"ispindel":    &models.Ispindel{ID: uint(ispindelID)},
+			"ispindel":    &models.Ispindel{Model: gorm.Model{ID: uint(ispindelID)}},
 			"name":        name,
 			"description": description,
 			"isActive":    isActive,
