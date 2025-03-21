@@ -46,7 +46,14 @@
                             {{ if .Description }}<div class="text-sm text-gray-500">{{ .Description }}</div>{{ end }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ if .DeviceID }}{{ .DeviceID }}{{ else }}Brak ID{{ end }}
+                            {{ if .DeviceID }}
+                                {{ .DeviceID }}
+                                {{ if .Name }}
+                                    <div class="text-xs text-gray-400">{{ .DeviceID }}/{{ .Name }}</div>
+                                {{ end }}
+                            {{ else }}
+                                Brak ID
+                            {{ end }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             {{ if .IsRecentlyActive }}
