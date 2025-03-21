@@ -99,19 +99,30 @@
                 fetch('/ispindels/' + id + '/delete', {
                     method: 'POST',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json, text/plain, */*'
                     }
                 })
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Wystąpił błąd podczas usuwania urządzenia');
+                    // Jeśli status jest ok (2xx), przekieruj na listę urządzeń
+                    if (response.ok) {
+                        window.location.href = '/ispindels';
+                        return;
                     }
-                    // Po pomyślnym usunięciu od razu przekierowujemy
-                    window.location.href = '/ispindels';
+                    
+                    // W przypadku błędu, spróbuj odczytać komunikat błędu
+                    return response.text().then(text => {
+                        try {
+                            const data = JSON.parse(text);
+                            throw new Error(data.error || 'Wystąpił błąd podczas usuwania urządzenia');
+                        } catch (e) {
+                            throw new Error('Wystąpił błąd podczas usuwania urządzenia');
+                        }
+                    });
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert(error.message || 'Wystąpił błąd podczas usuwania urządzenia');
+                    alert(error.message);
                 });
             }
         }
