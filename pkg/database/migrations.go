@@ -32,5 +32,12 @@ func RunMigrations() {
 	}
 	log.Println("Migracja tabeli measurements zakończona powodzeniem")
 	
+	// Migracja tabeli fermentations
+	err = DB.AutoMigrate(&models.Fermentation{})
+	if err != nil {
+		log.Fatalf("Błąd podczas migracji tabeli fermentations: %v", err)
+	}
+	log.Println("Migracja tabeli fermentations zakończona powodzeniem")
+	
 	log.Println("Wszystkie migracje zakończone powodzeniem")
 } 

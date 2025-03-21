@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .formTitle }} - iSpindel.piwo.org</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a class="font-bold text-xl" href="/">iSpindel</a>
+            <div class="flex items-center space-x-4">
+                <span>Witaj, {{.user.Name}}!</span>
+                <a href="/auth/logout" class="hover:text-blue-200">Wyloguj</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto">
+            <h1 class="text-2xl font-bold mb-6 text-center">{{ .formTitle }}</h1>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                {{if .error}}
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    {{.error}}
+                </div>
+                {{end}}
+
+                <form action="/fermentations/create" method="POST">
+                    <!-- Nazwa warki -->
+                    <div class="mb-6">
+                        <label for="name" class="block text-gray-700 text-sm font-bold mb-2">
+                            Nazwa warki <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                            id="name" name="name" value="{{ .name }}" required>
+                        <p class="text-gray-500 text-xs mt-1">Wymagane pole. Podaj nazwę swojej warki.</p>
+                    </div>
+
+                    <!-- Styl piwa -->
+                    <div class="mb-6">
+                        <label for="style_id" class="block text-gray-700 text-sm font-bold mb-2">
+                            Styl piwa
+                        </label>
+                        <div class="relative">
+                            <select id="style_id" name="style_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                {{range .beerStyles}}
+                                <option value="{{.style_id}}" {{if eq $.style_id .style_id}}selected{{end}}>
+                                    {{if ne .category ""}}[{{.category}}] {{end}}{{.name}}
+                                </option>
+                                {{end}}
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <p class="text-gray-500 text-xs mt-1">Opcjonalne. Wybierz styl piwa z listy lub wybierz "Styl własny".</p>
+                    </div>
+
+                    <!-- Dodatkowe informacje -->
+                    <div class="mb-6">
+                        <label for="description" class="block text-gray-700 text-sm font-bold mb-2">
+                            Dodatkowe informacje
+                        </label>
+                        <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                            id="description" name="description" rows="3">{{ .description }}</textarea>
+                        <p class="text-gray-500 text-xs mt-1">Opcjonalnie. Wprowadź dodatkowe informacje o warce (np. skład, parametry).</p>
+                    </div>
+
+                    <!-- Wybór urządzenia iSpindel -->
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">
+                            Urządzenie iSpindel <span class="text-red-500">*</span>
+                        </label>
+                        
+                        {{if .activeIspindels}}
+                            <div class="space-y-2">
+                                {{range .activeIspindels}}
+                                <div class="flex items-center">
+                                    <input type="radio" id="ispindel_{{.ID}}" name="ispindel_id" value="{{.ID}}" 
+                                        class="h-4 w-4 text-blue-600 focus:ring-blue-500" 
+                                        {{if eq (printf "%d" .ID) $.ispindel_id}}checked{{end}} required>
+                                    <label for="ispindel_{{.ID}}" class="ml-2 block text-gray-700">
+                                        {{.Name}} {{if .Description}}({{.Description}}){{end}}
+                                    </label>
+                                </div>
+                                {{end}}
+                            </div>
+                            <p class="text-gray-500 text-xs mt-1">Wymagane pole. Wybierz urządzenie iSpindel, które będzie monitorować fermentację.</p>
+                        {{else}}
+                            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+                                <p>Nie masz jeszcze aktywnych urządzeń iSpindel.</p>
+                                <a href="/ispindels/new" class="text-blue-600 hover:underline mt-2 inline-block">Dodaj nowe urządzenie</a>
+                            </div>
+                        {{end}}
+                    </div>
+
+                    <!-- Przyciski -->
+                    <div class="flex justify-between">
+                        <a href="/fermentations" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                            Anuluj
+                        </a>
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" 
+                            {{if not .activeIspindels}}disabled{{end}}>
+                            {{ .submitButton }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-white py-4 mt-8">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            &copy; 2023 iSpindel.piwo.org - System do monitorowania fermentacji
+        </div>
+    </footer>
+
+    <script>
+        // Podpowiadanie stylów piwa podczas pisania
+        document.addEventListener('DOMContentLoaded', function() {
+            const styleSelect = document.getElementById('style_id');
+            
+            // Opcja wyszukiwania w select
+            styleSelect.addEventListener('keydown', function(e) {
+                if (e.key.length === 1) {
+                    const options = Array.from(styleSelect.options);
+                    const searchText = e.key.toLowerCase();
+                    
+                    const foundOption = options.find(option => 
+                        option.text.toLowerCase().startsWith(searchText)
+                    );
+                    
+                    if (foundOption) {
+                        styleSelect.value = foundOption.value;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

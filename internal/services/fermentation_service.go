@@ -1,0 +1,110 @@
+package services
+
+import (
+	"errors"
+	"time"
+
+	"ispindel.piwo.org/internal/models"
+	"ispindel.piwo.org/pkg/database"
+	"gorm.io/gorm"
+)
+
+type FermentationService struct{}
+
+func NewFermentationService() *FermentationService {
+	return &FermentationService{}
+}
+
+// CreateFermentation tworzy nową fermentację
+func (s *FermentationService) CreateFermentation(userID uint, name, style, styleID, styleCategory, description string, ispindelID uint) (*models.Fermentation, error) {
+	// Sprawdź czy urządzenie istnieje i należy do tego użytkownika
+	var ispindel models.Ispindel
+	if err := database.DB.Where("id = ? AND user_id = ? AND is_active = ?", ispindelID, userID, true).First(&ispindel).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("nie znaleziono aktywnego urządzenia iSpindel o podanym ID")
+		}
+		return nil, err
+	}
+
+	// Utwórz nową fermentację
+	fermentation := &models.Fermentation{
+		UserID:        userID,
+		IspindelID:    ispindelID,
+		Name:          name,
+		Style:         style,
+		StyleID:       styleID,
+		StyleCategory: styleCategory,
+		Description:   description,
+		StartedAt:     time.Now(),
+		IsActive:      true,
+	}
+
+	if err := database.DB.Create(fermentation).Error; err != nil {
+		return nil, err
+	}
+
+	return fermentation, nil
+}
+
+// GetFermentationsByUserID pobiera wszystkie fermentacje użytkownika
+func (s *FermentationService) GetFermentationsByUserID(userID uint) ([]models.Fermentation, error) {
+	var fermentations []models.Fermentation
+	if err := database.DB.Where("user_id = ?", userID).Order("created_at DESC").Find(&fermentations).Error; err != nil {
+		return nil, err
+	}
+	return fermentations, nil
+}
+
+// GetActiveFermentationsByUserID pobiera aktywne fermentacje użytkownika
+func (s *FermentationService) GetActiveFermentationsByUserID(userID uint) ([]models.Fermentation, error) {
+	var fermentations []models.Fermentation
+	if err := database.DB.Where("user_id = ? AND is_active = ?", userID, true).Order("created_at DESC").Find(&fermentations).Error; err != nil {
+		return nil, err
+	}
+	return fermentations, nil
+}
+
+// GetFermentationByID pobiera fermentację po ID
+func (s *FermentationService) GetFermentationByID(fermentationID, userID uint) (*models.Fermentation, error) {
+	var fermentation models.Fermentation
+	if err := database.DB.Where("id = ? AND user_id = ?", fermentationID, userID).First(&fermentation).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("nie znaleziono fermentacji o podanym ID")
+		}
+		return nil, err
+	}
+
+	// Załaduj informacje o urządzeniu
+	if err := database.DB.Model(&fermentation).Association("Ispindel").Find(&fermentation.Ispindel); err != nil {
+		return nil, err
+	}
+
+	return &fermentation, nil
+}
+
+// EndFermentation kończy fermentację
+func (s *FermentationService) EndFermentation(fermentationID, userID uint) error {
+	fermentation, err := s.GetFermentationByID(fermentationID, userID)
+	if err != nil {
+		return err
+	}
+
+	if !fermentation.IsActive {
+		return errors.New("fermentacja jest już zakończona")
+	}
+
+	now := time.Now()
+	fermentation.EndedAt = &now
+	fermentation.IsActive = false
+
+	return database.DB.Save(fermentation).Error
+}
+
+// GetActiveIspindelsForUser zwraca listę aktywnych urządzeń iSpindel dla użytkownika
+func (s *FermentationService) GetActiveIspindelsForUser(userID uint) ([]models.Ispindel, error) {
+	var ispindels []models.Ispindel
+	if err := database.DB.Where("user_id = ? AND is_active = ?", userID, true).Find(&ispindels).Error; err != nil {
+		return nil, err
+	}
+	return ispindels, nil
+} 

@@ -62,6 +62,7 @@ func main() {
 	// Inicjalizacja handlerów
 	authHandler := handlers.NewAuthHandler()
 	ispindelHandler := handlers.NewIspindelHandler()
+	fermentationHandler := handlers.NewFermentationHandler()
 
 	// Użyj middleware'a dla wszystkich routów
 	r.Use(authMiddleware)
@@ -92,6 +93,17 @@ func main() {
 		ispindels.POST("/:id/edit", ispindelHandler.UpdateIspindel)
 		ispindels.POST("/:id/regenerate-key", ispindelHandler.RegenerateAPIKey)
 		ispindels.POST("/:id/delete", ispindelHandler.DeleteIspindel)
+	}
+
+	// Grupa dla zarządzania fermentacjami (wymaga autoryzacji)
+	fermentationGroup := r.Group("/fermentations")
+	fermentationGroup.Use(authMiddleware.RequireAuth())
+	{
+		fermentationGroup.GET("", fermentationHandler.FermentationsList)
+		fermentationGroup.GET("/new", fermentationHandler.NewFermentationForm)
+		fermentationGroup.POST("/create", fermentationHandler.CreateFermentation)
+		fermentationGroup.GET("/:id", fermentationHandler.FermentationDetails)
+		fermentationGroup.POST("/:id/end", fermentationHandler.EndFermentation)
 	}
 
 	// API endpoint dostępny bez autentykacji

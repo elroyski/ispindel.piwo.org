@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moje fermentacje - iSpindel.piwo.org</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a class="font-bold text-xl" href="/">iSpindel</a>
+            <div class="flex items-center space-x-4">
+                <span>Witaj, {{.user.Name}}!</span>
+                <a href="/auth/logout" class="hover:text-blue-200">Wyloguj</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">Moje fermentacje</h1>
+            <a href="/fermentations/new" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Nowa fermentacja
+            </a>
+        </div>
+
+        {{if .fermentations}}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {{range .fermentations}}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="p-5 border-b{{if .IsActive}} bg-green-50 border-green-200{{else}} bg-gray-50 border-gray-200{{end}}">
+                        <div class="flex justify-between items-start">
+                            <h2 class="text-xl font-semibold">{{.Name}}</h2>
+                            {{if .IsActive}}
+                            <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">Aktywna</span>
+                            {{else}}
+                            <span class="bg-gray-500 text-white text-xs font-bold px-2 py-1 rounded-full">Zakończona</span>
+                            {{end}}
+                        </div>
+                        {{if and .Style (ne .Style "")}}
+                        <p class="text-gray-600 text-sm mt-1">
+                            {{if ne .StyleID "OWN"}}
+                            <span class="font-medium">[{{.StyleID}}]</span> 
+                            {{end}}
+                            {{.Style}}
+                        </p>
+                        {{end}}
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-center text-sm text-gray-600 mb-3">
+                            <span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                {{.StartedAt.Format "02.01.2006"}}
+                            </span>
+                            <span>
+                                {{.GetDurationInDays}} dni
+                            </span>
+                        </div>
+                        
+                        <a href="/fermentations/{{.ID}}" class="block text-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition duration-200">
+                            Szczegóły
+                        </a>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+        {{else}}
+            <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                </svg>
+                <h2 class="text-xl font-semibold mb-2">Brak fermentacji</h2>
+                <p class="text-gray-600 mb-6">Nie masz jeszcze żadnych fermentacji. Rozpocznij swoją pierwszą fermentację.</p>
+                <a href="/fermentations/new" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                    Nowa fermentacja
+                </a>
+            </div>
+        {{end}}
+        
+        <div class="mt-6">
+            <a href="/dashboard" class="text-blue-600 hover:text-blue-800">
+                &larr; Powrót do panelu głównego
+            </a>
+        </div>
+    </div>
+    
+    <footer class="bg-white py-4 mt-8">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            &copy; 2023 iSpindel.piwo.org - System do monitorowania fermentacji
+        </div>
+    </footer>
+</body>
+</html> 
