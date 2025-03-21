@@ -290,24 +290,31 @@ func (h *IspindelHandler) RegenerateAPIKey(c *gin.Context) {
 func (h *IspindelHandler) DeleteIspindel(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Wymagane logowanie"})
+		c.Redirect(http.StatusSeeOther, "/auth/login")
 		return
 	}
 
 	userModel := user.(*models.User)
 	ispindelID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Nieprawidłowy identyfikator urządzenia"})
+		c.HTML(http.StatusBadRequest, "error.html", gin.H{
+			"error": "Nieprawidłowy identyfikator urządzenia",
+			"user":  userModel,
+		})
 		return
 	}
 
 	err = h.ispindelService.DeleteIspindel(uint(ispindelID), userModel.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Nie udało się usunąć urządzenia: " + err.Error()})
+		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
+			"error": "Nie udało się usunąć urządzenia: " + err.Error(),
+			"user":  userModel,
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"success": true})
+	// Przekierowanie na listę urządzeń po pomyślnym usunięciu
+	c.Redirect(http.StatusSeeOther, "/ispindels")
 }
 
 // API endpoint do odbierania danych z urządzeń iSpindel
