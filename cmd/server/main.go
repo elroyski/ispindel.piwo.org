@@ -6,7 +6,7 @@ import (
 	"os"
 	"log"
 	"encoding/json"
-	"text/template"
+	"html/template"
 
 	"github.com/gin-gonic/gin"
 	"ispindel.piwo.org/internal/handlers"

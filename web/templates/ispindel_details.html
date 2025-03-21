@@ -191,116 +191,123 @@
     
     {{ if .hasData }}
     <script>
-        // Dane dla wykresów
-        const timestamps = {{ .timestamps }};
-        const temperatures = {{ .temperatures }};
-        const gravities = {{ .gravities }};
-        const batteries = {{ .batteries }};
-        
-        // Konfiguracja wykresów
-        const commonOptions = {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                x: {
-                    ticks: {
-                        maxRotation: 45,
-                        minRotation: 45
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sprawdź, czy mamy dane
+            var hasData = {{if .hasData}}true{{else}}false{{end}};
+            
+            if (hasData) {
+                // Dane przekazane z kontrolera Go w formacie JSON
+                var timestamps = {{.timestamps | jsonify}};
+                var temperatures = {{.temperatures | jsonify}};
+                var gravities = {{.gravities | jsonify}};
+                var batteries = {{.batteries | jsonify}};
+                
+                // Konfiguracja wykresów
+                var commonOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
                     }
-                }
+                };
+                
+                // Wykres temperatury
+                new Chart(
+                    document.getElementById('temperatureChart').getContext('2d'),
+                    {
+                        type: 'line',
+                        data: {
+                            labels: timestamps,
+                            datasets: [{
+                                label: 'Temperatura (°C)',
+                                data: temperatures,
+                                borderColor: 'rgb(255, 99, 132)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                tension: 0.1
+                            }]
+                        },
+                        options: Object.assign({}, commonOptions, {
+                            scales: Object.assign({}, commonOptions.scales, {
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Temperatura (°C)'
+                                    }
+                                }
+                            })
+                        })
+                    }
+                );
+                
+                // Wykres gęstości
+                new Chart(
+                    document.getElementById('gravityChart').getContext('2d'),
+                    {
+                        type: 'line',
+                        data: {
+                            labels: timestamps,
+                            datasets: [{
+                                label: 'Gęstość',
+                                data: gravities,
+                                borderColor: 'rgb(54, 162, 235)',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                tension: 0.1
+                            }]
+                        },
+                        options: Object.assign({}, commonOptions, {
+                            scales: Object.assign({}, commonOptions.scales, {
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Gęstość'
+                                    }
+                                }
+                            })
+                        })
+                    }
+                );
+                
+                // Wykres baterii
+                new Chart(
+                    document.getElementById('batteryChart').getContext('2d'),
+                    {
+                        type: 'line',
+                        data: {
+                            labels: timestamps,
+                            datasets: [{
+                                label: 'Bateria (V)',
+                                data: batteries,
+                                borderColor: 'rgb(75, 192, 192)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                tension: 0.1
+                            }]
+                        },
+                        options: Object.assign({}, commonOptions, {
+                            scales: Object.assign({}, commonOptions.scales, {
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Bateria (V)'
+                                    },
+                                    min: 3.0,
+                                    max: 4.5
+                                }
+                            })
+                        })
+                    }
+                );
             }
-        };
-        
-        // Wykres temperatury
-        new Chart(
-            document.getElementById('temperatureChart').getContext('2d'),
-            {
-                type: 'line',
-                data: {
-                    labels: timestamps,
-                    datasets: [{
-                        label: 'Temperatura (°C)',
-                        data: temperatures,
-                        borderColor: 'rgb(255, 99, 132)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        tension: 0.1
-                    }]
-                },
-                options: Object.assign({}, commonOptions, {
-                    scales: Object.assign({}, commonOptions.scales, {
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Temperatura (°C)'
-                            }
-                        }
-                    })
-                })
-            }
-        );
-        
-        // Wykres gęstości
-        new Chart(
-            document.getElementById('gravityChart').getContext('2d'),
-            {
-                type: 'line',
-                data: {
-                    labels: timestamps,
-                    datasets: [{
-                        label: 'Gęstość',
-                        data: gravities,
-                        borderColor: 'rgb(54, 162, 235)',
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        tension: 0.1
-                    }]
-                },
-                options: Object.assign({}, commonOptions, {
-                    scales: Object.assign({}, commonOptions.scales, {
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Gęstość'
-                            }
-                        }
-                    })
-                })
-            }
-        );
-        
-        // Wykres baterii
-        new Chart(
-            document.getElementById('batteryChart').getContext('2d'),
-            {
-                type: 'line',
-                data: {
-                    labels: timestamps,
-                    datasets: [{
-                        label: 'Bateria (V)',
-                        data: batteries,
-                        borderColor: 'rgb(75, 192, 192)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        tension: 0.1
-                    }]
-                },
-                options: Object.assign({}, commonOptions, {
-                    scales: Object.assign({}, commonOptions.scales, {
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Bateria (V)'
-                            },
-                            min: 3.0,
-                            max: 4.5
-                        }
-                    })
-                })
-            }
-        );
+        });
     </script>
     {{ end }}
     
