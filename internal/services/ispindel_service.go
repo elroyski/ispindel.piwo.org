@@ -236,7 +236,6 @@ func (s *IspindelService) SaveMeasurement(ispindelID uint, data map[string]inter
 	// Aktualizuj informacje o urządzeniu
 	updates := map[string]interface{}{
 		"last_seen": time.Now(),
-		"is_active": true, // Ustaw urządzenie jako aktywne gdy otrzymamy nowy pomiar
 	}
 	
 	// Dodaj DeviceID do aktualizacji jeśli jest dostępne
