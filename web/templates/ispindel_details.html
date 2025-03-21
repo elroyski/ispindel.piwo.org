@@ -381,19 +381,30 @@
                 fetch('/ispindels/{{ .ispindel.ID }}/delete', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json, text/plain, */*'
                     }
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
+                .then(response => {
+                    // Jeśli status jest ok (2xx), przekieruj na listę urządzeń
+                    if (response.ok) {
                         window.location.href = '/ispindels';
-                    } else {
-                        alert('Wystąpił błąd: ' + (data.error || 'Nieznany błąd'));
+                        return;
                     }
+                    
+                    // W przypadku błędu, spróbuj odczytać komunikat błędu
+                    return response.text().then(text => {
+                        try {
+                            const data = JSON.parse(text);
+                            throw new Error(data.error || 'Wystąpił błąd podczas usuwania urządzenia');
+                        } catch (e) {
+                            throw new Error('Wystąpił błąd podczas usuwania urządzenia');
+                        }
+                    });
                 })
                 .catch(error => {
-                    alert('Wystąpił błąd: ' + error);
+                    console.error('Error:', error);
+                    alert(error.message);
                 });
             }
         });
