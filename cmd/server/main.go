@@ -61,6 +61,7 @@ func main() {
 
 	// Inicjalizacja handlerów
 	authHandler := handlers.NewAuthHandler()
+	ispindelHandler := handlers.NewIspindelHandler()
 
 	// Użyj middleware'a dla wszystkich routów
 	r.Use(authMiddleware)
@@ -79,6 +80,22 @@ func main() {
 		})
 		auth.POST("/resend-activation", authHandler.ResendActivation)
 	}
+
+	// Grupa routów dla zarządzania urządzeniami iSpindel
+	ispindels := r.Group("/ispindels")
+	{
+		ispindels.GET("/", ispindelHandler.ListIspindels)
+		ispindels.GET("/new", ispindelHandler.NewIspindelForm)
+		ispindels.POST("/new", ispindelHandler.CreateIspindel)
+		ispindels.GET("/:id", ispindelHandler.IspindelDetails)
+		ispindels.GET("/:id/edit", ispindelHandler.EditIspindelForm)
+		ispindels.POST("/:id/edit", ispindelHandler.UpdateIspindel)
+		ispindels.POST("/:id/regenerate-key", ispindelHandler.RegenerateAPIKey)
+		ispindels.POST("/:id/delete", ispindelHandler.DeleteIspindel)
+	}
+
+	// API endpoint dostępny bez autentykacji
+	r.POST("/api/ispindel/:api_key", ispindelHandler.ReceiveData)
 
 	// Strona główna
 	r.GET("/", func(c *gin.Context) {

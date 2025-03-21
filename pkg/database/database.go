@@ -7,7 +7,6 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"ispindel.piwo.org/internal/models"
 )
 
 var DB *gorm.DB
@@ -37,12 +36,10 @@ func InitDB() {
 
 	log.Println("Połączenie z bazą danych MySQL udane!")
 
-	err = db.AutoMigrate(&models.User{})
-	if err != nil {
-		log.Fatal("Nie udało się zmigrować schematu bazy danych:", err)
-	}
-
 	DB = db
+	
+	// Uruchom migracje
+	RunMigrations()
 }
 
 func getEnvOrDefault(key, defaultValue string) string {

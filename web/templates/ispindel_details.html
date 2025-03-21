@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .ispindel.Name }} - Szczegóły iSpindel</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">
+            {{ .ispindel.Name }}
+            {{ if .ispindel.IsActive }}
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Aktywny
+            </span>
+            {{ else }}
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                Nieaktywny
+            </span>
+            {{ end }}
+        </h1>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="text-xl font-semibold">Informacje o urządzeniu</h2>
+                    <p class="text-gray-600">{{ .ispindel.Description }}</p>
+                </div>
+                <div class="flex space-x-2">
+                    <a href="/ispindels/{{ .ispindel.ID }}/edit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md">
+                        Edytuj
+                    </a>
+                    <button id="deleteBtn" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md">
+                        Usuń
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="bg-gray-50 p-4 rounded-md">
+                    <h3 class="font-medium text-gray-700 mb-2">Szczegóły urządzenia</h3>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div class="text-gray-500">ID urządzenia:</div>
+                        <div>{{ if .ispindel.DeviceID }}{{ .ispindel.DeviceID }}{{ else }}Nieznane{{ end }}</div>
+                        
+                        <div class="text-gray-500">Ostatnia aktywność:</div>
+                        <div>{{ if .ispindel.LastSeen.IsZero }}Brak aktywności{{ else }}{{ .ispindel.LastSeen.Format "2006-01-02 15:04:05" }}{{ end }}</div>
+                        
+                        <div class="text-gray-500">Klucz API:</div>
+                        <div class="font-mono text-xs">{{ .ispindel.APIKey }}</div>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-md">
+                    <h3 class="font-medium text-blue-700 mb-2">Konfiguracja HTTP</h3>
+                    <p class="text-sm mb-2">Aby skonfigurować swoje urządzenie iSpindel do wysyłania danych do tego systemu:</p>
+                    <ol class="text-sm list-decimal list-inside space-y-1 ml-2">
+                        <li>W konfiguracji iSpindel wybierz serwis "HTTP".</li>
+                        <li>Ustaw adres serwera na: <span class="font-mono bg-blue-100 px-1 rounded">{{ .apiEndpoint }}</span></li>
+                        <li>Format danych: JSON</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-3">Dane pomiarowe</h3>
+                
+                {{ if not .hasData }}
+                <div class="bg-gray-100 p-4 rounded-md text-center">
+                    <p>Brak danych pomiarowych dla tego urządzenia.</p>
+                    <p class="text-sm mt-2">Dane pojawią się tutaj po tym, jak urządzenie iSpindel wyśle pierwsze pomiary.</p>
+                </div>
+                {{ else }}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-md font-medium mb-2">Temperatura</h4>
+                        <div class="bg-white border rounded-md p-2 h-64">
+                            <canvas id="temperatureChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-md font-medium mb-2">Gęstość</h4>
+                        <div class="bg-white border rounded-md p-2 h-64">
+                            <canvas id="gravityChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-md font-medium mb-2">Bateria</h4>
+                        <div class="bg-white border rounded-md p-2 h-64">
+                            <canvas id="batteryChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-md font-medium mb-2">Ostatnie pomiary</h4>
+                        <div class="overflow-x-auto bg-white border rounded-md">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temp.</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gęstość</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bateria</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200 text-sm">
+                                    {{ range .measurements }}
+                                    <tr>
+                                        <td class="px-3 py-2 whitespace-nowrap">{{ .Timestamp.Format "2006-01-02 15:04" }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">{{ printf "%.1f" .Temperature }}°C</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">{{ printf "%.3f" .Gravity }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">{{ printf "%.1f" .Battery }}%</td>
+                                    </tr>
+                                    {{ end }}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {{ end }}
+            </div>
+        </div>
+        
+        <div class="flex justify-between mt-4">
+            <a href="/ispindels" class="text-blue-500 hover:text-blue-700">Wróć do listy urządzeń</a>
+        </div>
+    </div>
+    
+    <footer class="bg-white py-4 mt-8">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            &copy; 2023 iSpindel.piwo.org - System do monitorowania fermentacji
+        </div>
+    </footer>
+    
+    {{ if .hasData }}
+    <script>
+        // Dane dla wykresów
+        const timestamps = {{ .timestamps }};
+        const temperatures = {{ .temperatures }};
+        const gravities = {{ .gravities }};
+        const batteries = {{ .batteries }};
+        
+        // Konfiguracja wykresów
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        };
+        
+        // Wykres temperatury
+        new Chart(
+            document.getElementById('temperatureChart').getContext('2d'),
+            {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'Temperatura (°C)',
+                        data: temperatures,
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: Object.assign({}, commonOptions, {
+                    scales: Object.assign({}, commonOptions.scales, {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Temperatura (°C)'
+                            }
+                        }
+                    })
+                })
+            }
+        );
+        
+        // Wykres gęstości
+        new Chart(
+            document.getElementById('gravityChart').getContext('2d'),
+            {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'Gęstość',
+                        data: gravities,
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: Object.assign({}, commonOptions, {
+                    scales: Object.assign({}, commonOptions.scales, {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Gęstość'
+                            }
+                        }
+                    })
+                })
+            }
+        );
+        
+        // Wykres baterii
+        new Chart(
+            document.getElementById('batteryChart').getContext('2d'),
+            {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'Bateria (%)',
+                        data: batteries,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1
+                    }]
+                },
+                options: Object.assign({}, commonOptions, {
+                    scales: Object.assign({}, commonOptions.scales, {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Bateria (%)'
+                            },
+                            min: 0,
+                            max: 100
+                        }
+                    })
+                })
+            }
+        );
+    </script>
+    {{ end }}
+    
+    <script>
+        // Obsługa usuwania urządzenia
+        document.getElementById('deleteBtn').addEventListener('click', function() {
+            if (confirm('Czy na pewno chcesz usunąć to urządzenie? Wszystkie dane pomiarowe również zostaną usunięte.')) {
+                fetch('/ispindels/{{ .ispindel.ID }}/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/ispindels';
+                    } else {
+                        alert('Wystąpił błąd: ' + (data.error || 'Nieznany błąd'));
+                    }
+                })
+                .catch(error => {
+                    alert('Wystąpił błąd: ' + error);
+                });
+            }
+        });
+    </script>
+</body>
+</html> 
