@@ -3,99 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twoje urządzenia iSpindel</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <title>Lista urządzeń iSpindel - iSpindel.piwo.org</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <nav class="bg-blue-600 text-white shadow-md">
-        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
-            <a class="font-bold text-xl" href="/">iSpindel</a>
-            <div class="flex items-center space-x-4">
-                <span>Witaj, {{.user.Name}}!</span>
-                <a href="/auth/logout" class="hover:text-blue-200">Wyloguj</a>
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-bold">iSpindel</a>
+            <div>
+                {{ if .User }}
+                <span class="mr-4">Witaj, {{ .User.Username }}!</span>
+                <a href="/logout" class="text-white hover:text-blue-200">Wyloguj</a>
+                {{ else }}
+                <a href="/login" class="text-white hover:text-blue-200 mr-4">Zaloguj</a>
+                <a href="/register" class="text-white hover:text-blue-200">Zarejestruj</a>
+                {{ end }}
             </div>
         </div>
     </nav>
 
     <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-center mb-8">Twoje urządzenia iSpindel</h1>
-        
-        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">Lista urządzeń</h2>
-                <a href="/ispindels/new" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md">
-                    Dodaj nowe urządzenie
-                </a>
-            </div>
-            
-            {{ if not .ispindels }}
-            <div class="bg-gray-100 rounded-md p-4 text-center">
-                <p>Nie masz jeszcze żadnych urządzeń iSpindel.</p>
-                <p class="mt-2">Kliknij "Dodaj nowe urządzenie", aby rozpocząć.</p>
-            </div>
-            {{ else }}
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nazwa</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID urządzenia</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ostatnia aktywność</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Akcje</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {{ range .ispindels }}
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-medium text-gray-900">{{ .Name }}</div>
-                                <div class="text-sm text-gray-500">{{ .Description }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ if .DeviceID }}{{ .DeviceID }}{{ else }}Brak ID{{ end }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                {{ if .IsRecentlyActive }}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Aktywny
-                                </span>
-                                {{ else }}
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                    Nieaktywny
-                                </span>
-                                {{ end }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ if .LastSeen.IsZero }}
-                                Brak aktywności
-                                {{ else }}
-                                {{ .LastSeen.Format "2006-01-02 15:04:05" }}
-                                {{ end }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="/ispindels/{{ .ID }}" class="text-blue-600 hover:text-blue-900 mr-3">Szczegóły</a>
-                                <a href="/ispindels/{{ .ID }}/edit" class="text-indigo-600 hover:text-indigo-900">Edytuj</a>
-                            </td>
-                        </tr>
-                        {{ end }}
-                    </tbody>
-                </table>
-            </div>
-            {{ end }}
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Lista urządzeń iSpindel</h1>
+            <a href="/ispindels/new" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                Dodaj nowe urządzenie
+            </a>
         </div>
-        
-        <div class="flex justify-between mt-4">
-            <a href="/" class="text-blue-500 hover:text-blue-700">Wróć do strony głównej</a>
-            <a href="/dashboard" class="text-blue-500 hover:text-blue-700">Panel użytkownika</a>
+
+        {{ if .Ispindels }}
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nazwa</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID urządzenia</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ostatnia aktywność</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Akcje</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {{ range .Ispindels }}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-medium text-gray-900">{{ .Name }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ .DeviceID }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {{ if .IsRecentlyActive }}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                Aktywny
+                            </span>
+                            {{ else }}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                Nieaktywny
+                            </span>
+                            {{ end }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ if .LastActivity.IsZero }}
+                            Brak danych
+                            {{ else }}
+                            {{ .LastActivity.Format "02.01.2006 15:04:05" }}
+                            {{ end }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                            <a href="/ispindels/{{ .ID }}" class="text-blue-600 hover:text-blue-900">Szczegóły</a>
+                            <a href="/ispindels/{{ .ID }}/edit" class="text-indigo-600 hover:text-indigo-900">Edytuj</a>
+                            <form action="/ispindels/{{ .ID }}/delete" method="POST" class="inline">
+                                <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Czy na pewno chcesz usunąć to urządzenie?')">Usuń</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
         </div>
+        {{ else }}
+        <div class="bg-white shadow-md rounded-lg p-6 text-center">
+            <p class="text-gray-600 mb-4">Nie masz jeszcze żadnych urządzeń iSpindel.</p>
+            <a href="/ispindels/new" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                Dodaj pierwsze urządzenie
+            </a>
+        </div>
+        {{ end }}
     </div>
-    
-    <footer class="bg-white py-4 mt-8">
-        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
-            &copy; 2025 iSpindel.piwo.org - System do monitorowania fermentacji
-        </div>
-    </footer>
 </body>
 </html> 

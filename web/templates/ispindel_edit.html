@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edycja urządzenia iSpindel - {{ .Ispindel.Name }}</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-bold">iSpindel</a>
+            <div>
+                {{ if .User }}
+                <span class="mr-4">Witaj, {{ .User.Username }}!</span>
+                <a href="/logout" class="text-white hover:text-blue-200">Wyloguj</a>
+                {{ else }}
+                <a href="/login" class="text-white hover:text-blue-200 mr-4">Zaloguj</a>
+                <a href="/register" class="text-white hover:text-blue-200">Zarejestruj</a>
+                {{ end }}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Edycja urządzenia: {{ .Ispindel.Name }}</h1>
+            <p class="text-gray-600">ID urządzenia: {{ .Ispindel.DeviceID }}</p>
+        </div>
+
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <form action="/ispindels/{{ .Ispindel.ID }}/update" method="POST">
+                <div class="mb-4">
+                    <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Nazwa urządzenia:</label>
+                    <input type="text" id="name" name="name" value="{{ .Ispindel.Name }}" 
+                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                           required>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="deviceID" class="block text-gray-700 text-sm font-bold mb-2">ID urządzenia:</label>
+                    <input type="text" id="deviceID" name="deviceID" value="{{ .Ispindel.DeviceID }}" 
+                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                           required>
+                    <p class="text-sm text-gray-500 mt-1">Identyfikator urządzenia musi odpowiadać nazwie ustawionej w samym urządzeniu iSpindel.</p>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Opis (opcjonalnie):</label>
+                    <textarea id="description" name="description" 
+                              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24">{{ .Ispindel.Description }}</textarea>
+                </div>
+                
+                <div class="flex items-center justify-between mt-6">
+                    <a href="/ispindels" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                        Anuluj
+                    </a>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                        Zapisz zmiany
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html> 
