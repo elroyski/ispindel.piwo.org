@@ -25,7 +25,7 @@
         </div>
 
         <div class="bg-white shadow-md rounded-lg p-6">
-            <form action="/ispindels/{{ .ispindel.ID }}/update" method="POST">
+            <form action="/ispindels/{{ .ispindel.ID }}/edit" method="POST">
                 <div class="mb-4">
                     <label for="name" class="block text-gray-700 text-sm font-bold mb-2">Nazwa urządzenia:</label>
                     <input type="text" id="name" name="name" value="{{ .ispindel.Name }}" 
