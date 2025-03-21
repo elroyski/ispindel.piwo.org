@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"ispindel.piwo.org/internal/models"
@@ -317,10 +318,53 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		return
 	}
 
+	// Pobierz dane pomiarowe dla iSpindel przypisanego do tej fermentacji
+	var measurements []models.IspindelMeasurement
+	var hasData bool
+	var timestamps, temperatures, gravities, angles, batteries []interface{}
+	
+	if fermentation.IspindelID > 0 {
+		// Pobierz dane pomiarowe dla tego urządzenia
+		// Jeśli fermentacja jest aktywna, pobierz dane od momentu rozpoczęcia
+		// Jeśli fermentacja jest zakończona, pobierz dane z całego okresu fermentacji
+		var startTime, endTime time.Time
+		startTime = fermentation.StartedAt
+		
+		if fermentation.IsActive {
+			endTime = time.Now()
+		} else if fermentation.EndedAt != nil {
+			endTime = *fermentation.EndedAt
+		} else {
+			endTime = time.Now()
+		}
+		
+		// Pobierz dane pomiarowe z okresu fermentacji
+		measurements, err = h.IspindelService.GetMeasurementsForIspindelInRange(fermentation.IspindelID, startTime, endTime, 100)
+		if err == nil && len(measurements) > 0 {
+			hasData = true
+			
+			// Przygotuj dane do wykresów
+			for _, m := range measurements {
+				timestamps = append(timestamps, m.Timestamp.Format("02.01 15:04"))
+				temperatures = append(temperatures, m.Temperature)
+				gravities = append(gravities, m.Gravity)
+				angles = append(angles, m.Angle)
+				batteries = append(batteries, m.Battery)
+			}
+		}
+	}
+
 	// Renderuj szablon szczegółów fermentacji
 	c.HTML(http.StatusOK, "fermentation_details.html", gin.H{
 		"user":         userModel,
 		"fermentation": fermentation,
+		"hasData":      hasData,
+		"measurements": measurements,
+		"timestamps":   timestamps,
+		"temperatures": temperatures,
+		"gravities":    gravities,
+		"angles":       angles,
+		"batteries":    batteries,
 	})
 }
 

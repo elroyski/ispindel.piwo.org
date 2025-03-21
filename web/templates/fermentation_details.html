@@ -99,10 +99,28 @@
             <div class="bg-white rounded-lg shadow-md p-6 lg:col-span-3">
                 <h2 class="text-lg font-semibold mb-4">Dane pomiarowe</h2>
                 
+                {{if .hasData}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <h4 class="text-md font-medium mb-2">Temperatura</h4>
+                        <div class="bg-white border rounded-md p-2 h-64">
+                            <canvas id="temperatureChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-md font-medium mb-2">Gęstość</h4>
+                        <div class="bg-white border rounded-md p-2 h-64">
+                            <canvas id="gravityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                {{else}}
                 <!-- Tutaj będą dodane wykresy w przyszłości -->
                 <div class="flex justify-center items-center h-64 bg-gray-100 rounded">
                     <p class="text-gray-500">Dane wykresowe będą dostępne wkrótce</p>
                 </div>
+                {{end}}
                 
                 <div class="mt-6">
                     <h3 class="text-md font-semibold mb-2">Ostatnie pomiary</h3>
@@ -130,12 +148,23 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200 text-sm">
-                                <!-- Tutaj będą wiersze z danymi -->
+                                {{if .measurements}}
+                                    {{range .measurements}}
+                                    <tr>
+                                        <td class="px-3 py-2 whitespace-nowrap">{{.Timestamp.Format "02.01.2006 15:04"}}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">{{printf "%.1f" .Temperature}}°C</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">{{printf "%.3f" .Gravity}}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">{{printf "%.1f" .Angle}}°</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">{{printf "%.2f" .Battery}}V</td>
+                                    </tr>
+                                    {{end}}
+                                {{else}}
                                 <tr>
                                     <td class="px-3 py-2 whitespace-nowrap text-center" colspan="5">
                                         Brak danych pomiarowych
                                     </td>
                                 </tr>
+                                {{end}}
                             </tbody>
                         </table>
                     </div>
@@ -157,9 +186,87 @@
     </footer>
 
     <script>
-        // Przygotowanie na przyszłe wykresy
         document.addEventListener('DOMContentLoaded', function() {
-            // Kod do inicjalizacji wykresów będzie dodany później
+            // Sprawdź, czy mamy dane
+            var hasData = {{if .hasData}}true{{else}}false{{end}};
+            
+            if (hasData) {
+                // Konwersja danych z Go do JavaScript
+                var timestamps = JSON.parse('{{.timestamps | jsonify}}');
+                var temperatures = JSON.parse('{{.temperatures | jsonify}}');
+                var gravities = JSON.parse('{{.gravities | jsonify}}');
+                var batteries = JSON.parse('{{.batteries | jsonify}}');
+                
+                // Wykres temperatury
+                new Chart(
+                    document.getElementById('temperatureChart').getContext('2d'),
+                    {
+                        type: 'line',
+                        data: {
+                            labels: timestamps,
+                            datasets: [{
+                                label: 'Temperatura (°C)',
+                                data: temperatures,
+                                borderColor: 'rgb(255, 99, 132)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Temperatura (°C)'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+                
+                // Wykres gęstości
+                new Chart(
+                    document.getElementById('gravityChart').getContext('2d'),
+                    {
+                        type: 'line',
+                        data: {
+                            labels: timestamps,
+                            datasets: [{
+                                label: 'Gęstość',
+                                data: gravities,
+                                borderColor: 'rgb(54, 162, 235)',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Gęstość'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+            }
         });
     </script>
 </body>
