@@ -5,23 +5,28 @@ import (
 	"time"
 	"log"
 
+	"ispindel.piwo.org/pkg/database"
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/pkg/auth"
-	"ispindel.piwo.org/pkg/database"
 	"ispindel.piwo.org/pkg/mailer"
 	"ispindel.piwo.org/pkg/utils"
+	"gorm.io/gorm"
 )
 
-type UserService struct{}
+type UserService struct {
+	db *gorm.DB
+}
 
 func NewUserService() *UserService {
-	return &UserService{}
+	return &UserService{
+		db: database.DB,
+	}
 }
 
 func (s *UserService) Register(name, email, password, ip string) error {
 	// Sprawdź czy użytkownik już istnieje
 	var existingUser models.User
-	if err := database.DB.Where("email = ?", email).First(&existingUser).Error; err == nil {
+	if err := s.db.Where("email = ?", email).First(&existingUser).Error; err == nil {
 		return errors.New("użytkownik o podanym adresie email już istnieje")
 	}
 
@@ -46,7 +51,7 @@ func (s *UserService) Register(name, email, password, ip string) error {
 		ActivationExpires: activationExpires,
 	}
 
-	if err := database.DB.Create(&user).Error; err != nil {
+	if err := s.db.Create(&user).Error; err != nil {
 		return err
 	}
 
@@ -63,7 +68,7 @@ func (s *UserService) Register(name, email, password, ip string) error {
 
 func (s *UserService) ActivateAccount(token string) error {
 	var user models.User
-	if err := database.DB.Where("activation_token = ?", token).First(&user).Error; err != nil {
+	if err := s.db.Where("activation_token = ?", token).First(&user).Error; err != nil {
 		return errors.New("nieprawidłowy token aktywacyjny")
 	}
 
@@ -82,7 +87,7 @@ func (s *UserService) ActivateAccount(token string) error {
 	user.ActivationCompleted = true
 	user.ActivationToken = "" // Wyczyść token
 
-	if err := database.DB.Save(&user).Error; err != nil {
+	if err := s.db.Save(&user).Error; err != nil {
 		return err
 	}
 
@@ -91,7 +96,7 @@ func (s *UserService) ActivateAccount(token string) error {
 
 func (s *UserService) Login(email, password, ip string) (string, error) {
 	var user models.User
-	if err := database.DB.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := s.db.Where("email = ?", email).First(&user).Error; err != nil {
 		return "", errors.New("nieprawidłowy email lub hasło")
 	}
 
@@ -111,14 +116,14 @@ func (s *UserService) Login(email, password, ip string) (string, error) {
 		if user.FailedLogins >= 5 {
 			user.LockedUntil = time.Now().Add(15 * time.Minute)
 		}
-		database.DB.Save(&user)
+		s.db.Save(&user)
 		return "", errors.New("nieprawidłowy email lub hasło")
 	}
 
 	// Resetuj licznik nieudanych prób
 	user.FailedLogins = 0
 	user.LastLoginAt = time.Now()
-	database.DB.Save(&user)
+	s.db.Save(&user)
 
 	// Generuj token JWT
 	token, err := auth.GenerateToken(user.ID)
@@ -129,9 +134,10 @@ func (s *UserService) Login(email, password, ip string) (string, error) {
 	return token, nil
 }
 
-func (s *UserService) GetUserByID(id uint) (*models.User, error) {
+func (s *UserService) GetUser(userID int64) (*models.User, error) {
 	var user models.User
-	if err := database.DB.First(&user, id).Error; err != nil {
+	err := s.db.First(&user, userID).Error
+	if err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -139,7 +145,7 @@ func (s *UserService) GetUserByID(id uint) (*models.User, error) {
 
 func (s *UserService) ResendActivationEmail(email string) error {
 	var user models.User
-	if err := database.DB.Where("email = ?", email).First(&user).Error; err != nil {
+	if err := s.db.Where("email = ?", email).First(&user).Error; err != nil {
 		return errors.New("nie znaleziono użytkownika o podanym adresie email")
 	}
 
@@ -155,10 +161,19 @@ func (s *UserService) ResendActivationEmail(email string) error {
 	user.ActivationToken = activationToken
 	user.ActivationExpires = activationExpires
 
-	if err := database.DB.Save(&user).Error; err != nil {
+	if err := s.db.Save(&user).Error; err != nil {
 		return err
 	}
 
 	// Wyślij email z nowym linkiem aktywacyjnym
 	return mailer.SendActivationEmail(user.Email, user.Name, activationToken)
+}
+
+func (s *UserService) GetUserByID(userID uint) (*models.User, error) {
+	var user models.User
+	err := s.db.First(&user, userID).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 } 
