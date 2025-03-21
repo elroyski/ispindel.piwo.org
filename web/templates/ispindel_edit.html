@@ -94,9 +94,10 @@
     </footer>
 
     <script>
-        // Funkcja do usuwania urządzenia
         function deleteIspindel(id, name) {
             if (confirm('Czy na pewno chcesz usunąć urządzenie ' + name + '?')) {
+                const formData = new FormData();
+                
                 fetch('/ispindels/' + id + '/delete', {
                     method: 'POST',
                     headers: {
@@ -120,7 +121,7 @@
                 })
                 .then(data => {
                     if (data.message) {
-                        window.location.href = '/ispindels';
+                        window.location.reload();
                     } else {
                         throw new Error('Nieoczekiwana odpowiedź z serwera');
                     }
