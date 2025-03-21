@@ -117,16 +117,27 @@
                 fetch('/ispindels/' + id + '/delete', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     }
-                }).then(response => {
-                    if (response.ok) {
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.error || 'Wystąpił błąd podczas usuwania urządzenia');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.message) {
                         window.location.href = '/ispindels';
                     } else {
-                        alert('Wystąpił błąd podczas usuwania urządzenia');
+                        throw new Error('Nieoczekiwana odpowiedź z serwera');
                     }
-                }).catch(error => {
-                    alert('Wystąpił błąd: ' + error);
+                })
+                .catch(error => {
+                    alert(error.message || 'Wystąpił błąd podczas usuwania urządzenia');
                 });
             }
             return false;
@@ -139,7 +150,8 @@
                 form.onsubmit = function(e) {
                     e.preventDefault();
                     const id = form.action.split('/').slice(-2)[0];
-                    const name = form.closest('tr').querySelector('.font-medium').textContent;
+                    const nameElement = form.closest('tr').querySelector('.font-medium');
+                    const name = nameElement ? nameElement.textContent.trim() : 'to urządzenie';
                     deleteIspindel(id, name);
                 };
             });
