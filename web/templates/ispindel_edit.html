@@ -47,6 +47,31 @@
                               class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-24">{{ .ispindel.Description }}</textarea>
                 </div>
                 
+                <div class="mb-4">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="is_active" name="is_active" value="true" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                               {{ if .ispindel.IsActive }}checked{{ end }}>
+                        <label for="is_active" class="ml-2 block text-sm font-medium text-gray-700">
+                            Urządzenie aktywne
+                        </label>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Odznacz, aby tymczasowo zatrzymać zbieranie danych z tego urządzenia.</p>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="api_key" class="block text-gray-700 text-sm font-bold mb-2">Klucz API:</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="api_key" value="{{ .ispindel.APIKey }}" readonly 
+                               class="shadow appearance-none border rounded bg-gray-100 w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline font-mono text-sm">
+                        <a href="/ispindels/{{ .ispindel.ID }}/regenerate-api-key" 
+                           onclick="return confirm('Czy na pewno chcesz zregenerować klucz API? Wszystkie urządzenia korzystające z obecnego klucza przestaną działać.')"
+                           class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:shadow-outline transition duration-300">
+                            Regeneruj
+                        </a>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Uwaga: regeneracja klucza API spowoduje, że urządzenia używające starego klucza przestaną działać. Konieczna będzie aktualizacja konfiguracji tych urządzeń.</p>
+                </div>
+                
                 <div class="flex items-center justify-between mt-6">
                     <a href="/ispindels" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
                         Anuluj

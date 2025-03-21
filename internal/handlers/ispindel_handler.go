@@ -191,14 +191,9 @@ func (h *IspindelHandler) EditIspindelForm(c *gin.Context) {
 		return
 	}
 
-	c.HTML(http.StatusOK, "ispindel_form.html", gin.H{
-		"user":        userModel,
-		"title":       "Edytuj urządzenie iSpindel",
-		"ispindel":    ispindel,
-		"name":        ispindel.Name,
-		"description": ispindel.Description,
-		"isActive":    ispindel.IsActive,
-		"isEdit":      true,
+	c.HTML(http.StatusOK, "ispindel_edit.html", gin.H{
+		"user":     userModel,
+		"ispindel": ispindel,
 	})
 }
 
@@ -231,6 +226,7 @@ func (h *IspindelHandler) UpdateIspindel(c *gin.Context) {
 
 	name := c.PostForm("name")
 	description := c.PostForm("description")
+	isActive := c.PostForm("is_active") == "true"
 
 	if name == "" {
 		c.HTML(http.StatusBadRequest, "ispindel_form.html", gin.H{
@@ -240,6 +236,7 @@ func (h *IspindelHandler) UpdateIspindel(c *gin.Context) {
 			"ispindel":    ispindel,
 			"name":        ispindel.Name,
 			"description": ispindel.Description,
+			"isActive":    ispindel.IsActive,
 			"isEdit":      true,
 		})
 		return
@@ -247,6 +244,7 @@ func (h *IspindelHandler) UpdateIspindel(c *gin.Context) {
 
 	ispindel.Name = name
 	ispindel.Description = description
+	ispindel.IsActive = isActive
 
 	err = h.ispindelService.UpdateIspindel(ispindel)
 	if err != nil {
@@ -257,6 +255,7 @@ func (h *IspindelHandler) UpdateIspindel(c *gin.Context) {
 			"ispindel":    ispindel,
 			"name":        name,
 			"description": description,
+			"isActive":    isActive,
 			"isEdit":      true,
 		})
 		return
