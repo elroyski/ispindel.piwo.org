@@ -97,19 +97,38 @@
                     <ol class="text-sm list-decimal list-inside space-y-2 ml-2">
                         <li>W konfiguracji iSpindel wybierz serwis <span class="font-medium">"HTTP"</span>.</li>
                         <li>
-                            <span class="font-medium">Token:</span> <span class="font-mono bg-blue-100 px-1 rounded">{{ .ispindel.APIKey }}</span>
+                            <span class="font-medium">Token:</span> 
+                            <span class="font-mono bg-blue-100 px-1 rounded" id="apiToken">{{ .ispindel.APIKey }}</span>
+                            <button onclick="copyToClipboard('apiToken')" class="ml-2 text-gray-500 hover:text-gray-700 inline-flex items-center" title="Kopiuj do schowka">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-12a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2"/>
+                                </svg>
+                            </button>
                             <p class="text-xs text-gray-600 ml-6">W polu Token wprowadź klucz API</p>
                         </li>
                         <li>
-                            <span class="font-medium">Server Address:</span> <span class="font-mono bg-blue-100 px-1 rounded">ispindel.piwo.org</span>
+                            <span class="font-medium">Server Address:</span> 
+                            <span class="font-mono bg-blue-100 px-1 rounded" id="serverAddress">ispindel.piwo.org</span>
+                            <button onclick="copyToClipboard('serverAddress')" class="ml-2 text-gray-500 hover:text-gray-700 inline-flex items-center" title="Kopiuj do schowka">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-12a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2"/>
+                                </svg>
+                            </button>
                             <p class="text-xs text-gray-600 ml-6">To jest adres domenowy serwera, bez http:// i ścieżki</p>
                         </li>
                         <li>
-                            <span class="font-medium">Server Port:</span> <span class="font-mono bg-blue-100 px-1 rounded">80</span>
+                            <span class="font-medium">Server Port:</span> 
+                            <span class="font-mono bg-blue-100 px-1 rounded">80</span>
                             <p class="text-xs text-gray-600 ml-6">Port standardowy dla połączeń HTTP</p>
                         </li>
                         <li>
-                            <span class="font-medium">Server URL:</span> <span class="font-mono bg-blue-100 px-1 rounded">/api/ispindel</span>
+                            <span class="font-medium">Server URL:</span> 
+                            <span class="font-mono bg-blue-100 px-1 rounded" id="serverUrl">/api/ispindel</span>
+                            <button onclick="copyToClipboard('serverUrl')" class="ml-2 text-gray-500 hover:text-gray-700 inline-flex items-center" title="Kopiuj do schowka">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-12a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h4a2 2 0 002-2M8 5a2 2 0 012-2h4a2 2 0 012 2"/>
+                                </svg>
+                            </button>
                             <p class="text-xs text-gray-600 ml-6">To jest ścieżka API na serwerze</p>
                         </li>
                         <li>
@@ -331,6 +350,22 @@
     {{ end }}
     
     <script>
+        // Funkcja do kopiowania tekstu do schowka
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // Dodaj klasę dla efektu wizualnego
+                element.classList.add('bg-green-100');
+                setTimeout(() => {
+                    element.classList.remove('bg-green-100');
+                }, 500);
+            }).catch(err => {
+                console.error('Błąd podczas kopiowania:', err);
+            });
+        }
+        
         // Obsługa usuwania urządzenia
         document.getElementById('deleteBtn').addEventListener('click', function() {
             if (confirm('Czy na pewno chcesz usunąć to urządzenie? Wszystkie dane pomiarowe również zostaną usunięte.')) {
