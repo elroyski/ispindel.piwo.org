@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ .formTitle }} - iSpindel.piwo.org</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Dodane biblioteki Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <style>
+        /* Dostosowanie stylu Select2 do Tailwind */
+        .select2-container .select2-selection--single {
+            height: 38px !important;
+            border-color: #e2e8f0 !important;
+            border-radius: 0.25rem !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 38px !important;
+            color: #4a5568 !important;
+            padding-left: 0.75rem !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 38px !important;
+        }
+        .select2-dropdown {
+            border-color: #e2e8f0 !important;
+        }
+        .select2-search__field {
+            border-radius: 0.25rem !important;
+            border-color: #e2e8f0 !important;
+            padding: 0.5rem !important;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
     <nav class="bg-blue-600 text-white shadow-md">
@@ -44,21 +72,14 @@
                         <label for="style_id" class="block text-gray-700 text-sm font-bold mb-2">
                             Styl piwa
                         </label>
-                        <div class="relative">
-                            <select id="style_id" name="style_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                                {{range .beerStyles}}
-                                <option value="{{.style_id}}" {{if eq $.style_id .style_id}}selected{{end}}>
-                                    {{if ne .category ""}}[{{.category}}] {{end}}{{.name}}
-                                </option>
-                                {{end}}
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                                </svg>
-                            </div>
-                        </div>
-                        <p class="text-gray-500 text-xs mt-1">Opcjonalne. Wybierz styl piwa z listy lub wybierz "Styl własny".</p>
+                        <select id="style_id" name="style_id" class="w-full">
+                            {{range .beerStyles}}
+                            <option value="{{.style_id}}" {{if eq $.style_id .style_id}}selected{{end}}>
+                                {{if ne .category ""}}[{{.category}}] {{end}}{{.name}}
+                            </option>
+                            {{end}}
+                        </select>
+                        <p class="text-gray-500 text-xs mt-1">Opcjonalne. Wybierz styl piwa z listy lub wybierz "Styl własny". Możesz wpisać tekst, aby wyszukać styl.</p>
                     </div>
 
                     <!-- Dodatkowe informacje -->
@@ -131,22 +152,18 @@
     </footer>
 
     <script>
-        // Podpowiadanie stylów piwa podczas pisania
-        document.addEventListener('DOMContentLoaded', function() {
-            const styleSelect = document.getElementById('style_id');
-            
-            // Opcja wyszukiwania w select
-            styleSelect.addEventListener('keydown', function(e) {
-                if (e.key.length === 1) {
-                    const options = Array.from(styleSelect.options);
-                    const searchText = e.key.toLowerCase();
-                    
-                    const foundOption = options.find(option => 
-                        option.text.toLowerCase().startsWith(searchText)
-                    );
-                    
-                    if (foundOption) {
-                        styleSelect.value = foundOption.value;
+        // Inicjalizacja Select2 dla pola stylu piwa
+        $(document).ready(function() {
+            $('#style_id').select2({
+                placeholder: "Wybierz styl piwa...",
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Nie znaleziono pasujących stylów";
+                    },
+                    searching: function() {
+                        return "Szukanie...";
                     }
                 }
             });
