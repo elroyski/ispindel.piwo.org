@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
+	"strconv"
 	"time"
 
 	"ispindel.piwo.org/internal/models"
@@ -149,9 +151,19 @@ func (s *IspindelService) shouldSaveMeasurement(ispindelID uint) (bool, error) {
 		return false, result.Error
 	}
 	
-	// Sprawdź czy minęło co najmniej 900 sekund od ostatniego pomiaru
+	// Pobierz minimalny interwał z zmiennej środowiskowej
+	minInterval := 900 // domyślna wartość 900 sekund (15 minut)
+	if envInterval := os.Getenv("ISPINDEL_MIN_INTERVAL"); envInterval != "" {
+		if interval, err := strconv.Atoi(envInterval); err == nil {
+			minInterval = interval
+		} else {
+			log.Printf("Błąd podczas parsowania ISPINDEL_MIN_INTERVAL: %v, używam wartości domyślnej 900", err)
+		}
+	}
+	
+	// Sprawdź czy minął wymagany czas od ostatniego pomiaru
 	timeSinceLastMeasurement := time.Since(lastMeasurement.Timestamp)
-	return timeSinceLastMeasurement.Seconds() >= 900, nil
+	return timeSinceLastMeasurement.Seconds() >= float64(minInterval), nil
 }
 
 // SaveMeasurement zapisuje pomiar z urządzenia iSpindel
