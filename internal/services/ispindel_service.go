@@ -78,21 +78,12 @@ func (s *IspindelService) GetIspindelByID(ispindelID, userID uint) (*models.Ispi
 }
 
 // UpdateIspindel aktualizuje dane urządzenia
-func (s *IspindelService) UpdateIspindel(ispindelID, userID uint, name, description string, isActive bool) (*models.Ispindel, error) {
-	ispindel, err := s.GetIspindelByID(ispindelID, userID)
-	if err != nil {
-		return nil, err
-	}
-
-	ispindel.Name = name
-	ispindel.Description = description
-	ispindel.IsActive = isActive
-
-	if err := database.DB.Save(ispindel).Error; err != nil {
-		return nil, err
-	}
-
-	return ispindel, nil
+func (s *IspindelService) UpdateIspindel(ispindel *models.Ispindel) error {
+	// Aktualizujemy tylko pola name i description
+	return database.DB.Model(ispindel).Updates(map[string]interface{}{
+		"name":        ispindel.Name,
+		"description": ispindel.Description,
+	}).Error
 }
 
 // DeleteIspindel usuwa urządzenie

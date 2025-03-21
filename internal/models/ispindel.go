@@ -36,4 +36,12 @@ type Measurement struct {
 	RSSI         int       `json:"rssi"`
 	Timestamp    time.Time `json:"timestamp"`
 	ReceivedAt   time.Time `json:"received_at"`
+}
+
+// IsActive sprawdza, czy urządzenie jest aktywne (wysłało dane w ciągu ostatniej godziny)
+func (i *Ispindel) IsRecentlyActive() bool {
+	if i.LastSeen.IsZero() {
+		return false
+	}
+	return time.Since(i.LastSeen) <= time.Hour
 } 

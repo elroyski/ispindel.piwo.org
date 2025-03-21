@@ -26,11 +26,9 @@
                     <p class="text-xs text-gray-500 mt-1">Nazwa służy do identyfikacji urządzenia w systemie.</p>
                 </div>
                 
-                <div>
-                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Opis (opcjonalnie)</label>
-                    <textarea id="description" name="description" rows="3"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">{{ .description }}</textarea>
-                    <p class="text-xs text-gray-500 mt-1">Możesz dodać szczegóły dotyczące urządzenia, np. dla jakiego fermentora jest używane.</p>
+                <div class="mb-4">
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-1">Opis (opcjonalny)</label>
+                    <textarea id="description" name="description" rows="3" class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md">{{ .description }}</textarea>
                 </div>
                 
                 {{ if .isEdit }}
@@ -46,23 +44,15 @@
                 </div>
                 
                 {{ if .ispindel }}
-                <div class="bg-gray-50 p-4 rounded-md">
-                    <h3 class="font-medium text-gray-700 mb-2">Informacje o kluczu API</h3>
-                    <p class="text-sm text-gray-600 mb-2">
-                        Klucz API dla tego urządzenia:
-                        <span class="font-mono bg-gray-200 px-1 rounded">{{ .ispindel.APIKey }}</span>
-                    </p>
-                    <p class="text-xs text-gray-500 mb-3">Ten klucz jest używany w konfiguracji urządzenia iSpindel, aby mogło wysyłać dane do serwera.</p>
-                    
-                    <div>
-                        <button type="button" id="regenerateKey" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Wygeneruj nowy klucz
+                <div class="mb-4">
+                    <label for="api_key" class="block text-sm font-medium text-gray-700 mb-1">Klucz API</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="api_key" value="{{ .ispindel.APIKey }}" readonly class="bg-gray-100 shadow-sm block w-full sm:text-sm border-gray-300 rounded-md font-mono text-sm">
+                        <button type="button" id="regenerateApiKey" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Regeneruj
                         </button>
-                        <p class="text-xs text-red-500 mt-1">Uwaga: generowanie nowego klucza spowoduje, że stary klucz przestanie działać i będziesz musiał zaktualizować konfigurację urządzenia.</p>
                     </div>
+                    <p class="mt-1 text-sm text-gray-500">Uwaga: regeneracja klucza API spowoduje, że urządzenia używające starego klucza przestaną działać. Konieczna będzie aktualizacja konfiguracji tych urządzeń.</p>
                 </div>
                 
                 <div class="bg-blue-50 p-4 rounded-md">
@@ -92,7 +82,7 @@
     
     {{ if .isEdit }}
     <script>
-        document.getElementById('regenerateKey').addEventListener('click', function() {
+        document.getElementById('regenerateApiKey').addEventListener('click', function() {
             if (confirm('Czy na pewno chcesz wygenerować nowy klucz API? Stary klucz przestanie działać i będziesz musiał zaktualizować konfigurację urządzenia.')) {
                 fetch('/ispindels/{{ .ispindel.ID }}/regenerate-key', {
                     method: 'POST',

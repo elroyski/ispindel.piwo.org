@@ -46,13 +46,13 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ if .DeviceID }}{{ .DeviceID }}{{ else }}Brak ID{{ end }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                {{ if .IsActive }}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                {{ if .IsRecentlyActive }}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                     Aktywny
                                 </span>
                                 {{ else }}
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                     Nieaktywny
                                 </span>
                                 {{ end }}

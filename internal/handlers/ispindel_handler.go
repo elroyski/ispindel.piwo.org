@@ -200,7 +200,7 @@ func (h *IspindelHandler) EditIspindelForm(c *gin.Context) {
 	})
 }
 
-// Aktualizacja urządzenia
+// UpdateIspindel aktualizuje dane urządzenia
 func (h *IspindelHandler) UpdateIspindel(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {
@@ -218,34 +218,43 @@ func (h *IspindelHandler) UpdateIspindel(c *gin.Context) {
 		return
 	}
 
+	ispindel, err := h.ispindelService.GetIspindelByID(uint(ispindelID), userModel.ID)
+	if err != nil {
+		c.HTML(http.StatusNotFound, "error.html", gin.H{
+			"error": "Nie znaleziono urządzenia",
+			"user":  userModel,
+		})
+		return
+	}
+
 	name := c.PostForm("name")
 	description := c.PostForm("description")
-	isActive := c.PostForm("is_active") == "on"
 
 	if name == "" {
 		c.HTML(http.StatusBadRequest, "ispindel_form.html", gin.H{
 			"user":        userModel,
 			"error":       "Nazwa urządzenia jest wymagana",
 			"title":       "Edytuj urządzenie iSpindel",
-			"ispindel":    &models.Ispindel{Model: gorm.Model{ID: uint(ispindelID)}},
-			"name":        name,
-			"description": description,
-			"isActive":    isActive,
+			"ispindel":    ispindel,
+			"name":        ispindel.Name,
+			"description": ispindel.Description,
 			"isEdit":      true,
 		})
 		return
 	}
 
-	ispindel, err := h.ispindelService.UpdateIspindel(uint(ispindelID), userModel.ID, name, description, isActive)
+	ispindel.Name = name
+	ispindel.Description = description
+
+	err = h.ispindelService.UpdateIspindel(ispindel)
 	if err != nil {
 		c.HTML(http.StatusInternalServerError, "ispindel_form.html", gin.H{
 			"user":        userModel,
 			"error":       "Nie udało się zaktualizować urządzenia: " + err.Error(),
 			"title":       "Edytuj urządzenie iSpindel",
-			"ispindel":    &models.Ispindel{Model: gorm.Model{ID: uint(ispindelID)}},
+			"ispindel":    ispindel,
 			"name":        name,
 			"description": description,
-			"isActive":    isActive,
 			"isEdit":      true,
 		})
 		return
