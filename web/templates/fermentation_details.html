@@ -191,11 +191,11 @@
             var hasData = {{if .hasData}}true{{else}}false{{end}};
             
             if (hasData) {
-                // Konwersja danych z Go do JavaScript
-                var timestamps = JSON.parse('{{.timestamps | jsonify}}');
-                var temperatures = JSON.parse('{{.temperatures | jsonify}}');
-                var gravities = JSON.parse('{{.gravities | jsonify}}');
-                var batteries = JSON.parse('{{.batteries | jsonify}}');
+                // Dane przekształcone do formatu JSON
+                var timestamps = {{.timestamps | jsonify}};
+                var temperatures = {{.temperatures | jsonify}};
+                var gravities = {{.gravities | jsonify}};
+                var batteries = {{.batteries | jsonify}};
                 
                 // Wykres temperatury
                 new Chart(

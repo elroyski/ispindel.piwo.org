@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 	"log"
+	"encoding/json"
+	"text/template"
 
 	"github.com/gin-gonic/gin"
 	"ispindel.piwo.org/internal/handlers"
@@ -26,6 +28,14 @@ func main() {
 
 	// Konfiguracja szablonów HTML
 	r.LoadHTMLGlob("web/templates/*")
+
+	// Dodanie funkcji do konwersji danych na JSON
+	r.SetFuncMap(template.FuncMap{
+		"jsonify": func(v interface{}) template.JS {
+			a, _ := json.Marshal(v)
+			return template.JS(a)
+		},
+	})
 
 	// Konfiguracja statycznych plików
 	r.Static("/static", "./web/static")
