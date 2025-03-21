@@ -96,8 +96,6 @@
     <script>
         function deleteIspindel(id, name) {
             if (confirm('Czy na pewno chcesz usunąć urządzenie ' + name + '?')) {
-                const formData = new FormData();
-                
                 fetch('/ispindels/' + id + '/delete', {
                     method: 'POST',
                     headers: {
@@ -105,26 +103,11 @@
                     }
                 })
                 .then(response => {
-                    if (response.headers.get('content-type')?.includes('application/json')) {
-                        return response.json().then(data => {
-                            if (!response.ok) {
-                                throw new Error(data.error || 'Wystąpił błąd podczas usuwania urządzenia');
-                            }
-                            return data;
-                        });
-                    } else {
-                        if (!response.ok) {
-                            throw new Error('Wystąpił błąd podczas usuwania urządzenia');
-                        }
-                        return response.text().then(() => ({ message: 'success' }));
+                    if (!response.ok) {
+                        throw new Error('Wystąpił błąd podczas usuwania urządzenia');
                     }
-                })
-                .then(data => {
-                    if (data.message) {
-                        window.location.href = '/ispindels';
-                    } else {
-                        throw new Error('Nieoczekiwana odpowiedź z serwera');
-                    }
+                    // Po pomyślnym usunięciu od razu przekierowujemy
+                    window.location.href = '/ispindels';
                 })
                 .catch(error => {
                     console.error('Error:', error);
