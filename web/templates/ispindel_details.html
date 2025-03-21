@@ -128,18 +128,24 @@
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nazwa</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temp.</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gęstość</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bateria</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bateria (V)</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interwał (s)</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200 text-sm">
                                     {{ range .measurements }}
                                     <tr>
                                         <td class="px-3 py-2 whitespace-nowrap">{{ .Timestamp.Format "2006-01-02 15:04" }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">{{ if .DeviceID }}{{ .DeviceID }}{{ else }}---{{ end }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">{{ if and .Name (ne .Name "") }}{{ .Name }}{{ else }}(nie ustawiono w urządzeniu){{ end }}</td>
                                         <td class="px-3 py-2 whitespace-nowrap">{{ printf "%.1f" .Temperature }}°C</td>
                                         <td class="px-3 py-2 whitespace-nowrap">{{ printf "%.3f" .Gravity }}</td>
-                                        <td class="px-3 py-2 whitespace-nowrap">{{ printf "%.1f" .Battery }}%</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">{{ printf "%.2f" .Battery }}V</td>
+                                        <td class="px-3 py-2 whitespace-nowrap">{{ if .Interval }}{{ .Interval }}{{ else }}---{{ end }}</td>
                                     </tr>
                                     {{ end }}
                                 </tbody>
@@ -253,7 +259,7 @@
                 data: {
                     labels: timestamps,
                     datasets: [{
-                        label: 'Bateria (%)',
+                        label: 'Bateria (V)',
                         data: batteries,
                         borderColor: 'rgb(75, 192, 192)',
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -265,10 +271,10 @@
                         y: {
                             title: {
                                 display: true,
-                                text: 'Bateria (%)'
+                                text: 'Bateria (V)'
                             },
-                            min: 0,
-                            max: 100
+                            min: 3.0,
+                            max: 4.5
                         }
                     })
                 })
