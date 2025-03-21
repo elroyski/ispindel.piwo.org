@@ -54,17 +54,6 @@
                     </div>
                     <p class="mt-1 text-sm text-gray-500">Uwaga: regeneracja klucza API spowoduje, że urządzenia używające starego klucza przestaną działać. Konieczna będzie aktualizacja konfiguracji tych urządzeń.</p>
                 </div>
-                
-                <div class="bg-blue-50 p-4 rounded-md">
-                    <h3 class="font-medium text-blue-700 mb-2">Konfiguracja urządzenia iSpindel</h3>
-                    <p class="text-sm text-gray-600 mb-2">
-                        Adres serwera: <span class="font-mono">{{ .apiEndpoint }}</span>
-                    </p>
-                    <p class="text-xs text-gray-500">
-                        Skonfiguruj swoje urządzenie iSpindel, aby wysyłało dane na powyższy adres za pomocą protokołu HTTP. 
-                        Więcej informacji znajdziesz w dokumentacji urządzenia.
-                    </p>
-                </div>
                 {{ end }}
                 {{ end }}
                 
@@ -72,9 +61,16 @@
                     <a href="/ispindels" class="bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-md">
                         Anuluj
                     </a>
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md">
-                        {{ if .isEdit }}Zapisz zmiany{{ else }}Dodaj urządzenie{{ end }}
-                    </button>
+                    <div class="flex space-x-2">
+                        {{ if .isEdit }}
+                        <button type="button" id="deleteDevice" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md">
+                            Usuń urządzenie
+                        </button>
+                        {{ end }}
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md">
+                            {{ if .isEdit }}Zapisz zmiany{{ else }}Dodaj urządzenie{{ end }}
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -95,6 +91,29 @@
                     if (data.api_key) {
                         alert('Nowy klucz API został wygenerowany. Pamiętaj, aby zaktualizować konfigurację urządzenia!');
                         window.location.reload();
+                    } else {
+                        alert('Wystąpił błąd: ' + (data.error || 'Nieznany błąd'));
+                    }
+                })
+                .catch(error => {
+                    alert('Wystąpił błąd: ' + error);
+                });
+            }
+        });
+
+        document.getElementById('deleteDevice').addEventListener('click', function() {
+            if (confirm('UWAGA: Czy na pewno chcesz usunąć to urządzenie?\n\nWszystkie dane pomiarowe zostaną bezpowrotnie utracone. Tej operacji nie można cofnąć.')) {
+                fetch('/ispindels/{{ .ispindel.ID }}/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Urządzenie zostało usunięte wraz ze wszystkimi danymi.');
+                        window.location.href = '/ispindels';
                     } else {
                         alert('Wystąpił błąd: ' + (data.error || 'Nieznany błąd'));
                     }
