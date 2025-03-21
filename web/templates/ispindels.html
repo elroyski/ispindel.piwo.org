@@ -4,21 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista urządzeń iSpindel - iSpindel.piwo.org</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <nav class="bg-blue-600 text-white p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <a href="/" class="text-xl font-bold">iSpindel</a>
-            <div>
-                {{ if .User }}
-                <span class="mr-4">Witaj, {{ .User.Username }}!</span>
-                <a href="/logout" class="text-white hover:text-blue-200">Wyloguj</a>
-                {{ else }}
-                <a href="/login" class="text-white hover:text-blue-200 mr-4">Zaloguj</a>
-                <a href="/register" class="text-white hover:text-blue-200">Zarejestruj</a>
-                {{ end }}
+    <nav class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a class="font-bold text-xl" href="/">iSpindel</a>
+            <div class="flex items-center space-x-4">
+                <span>Witaj, {{.user.Name}}!</span>
+                <a href="/auth/logout" class="hover:text-blue-200">Wyloguj</a>
             </div>
         </div>
     </nav>
@@ -31,7 +26,7 @@
             </a>
         </div>
 
-        {{ if .Ispindels }}
+        {{ if .ispindels }}
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -44,12 +39,15 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    {{ range .Ispindels }}
+                    {{ range .ispindels }}
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="font-medium text-gray-900">{{ .Name }}</div>
+                            {{ if .Description }}<div class="text-sm text-gray-500">{{ .Description }}</div>{{ end }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ .DeviceID }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ if .DeviceID }}{{ .DeviceID }}{{ else }}Brak ID{{ end }}
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             {{ if .IsRecentlyActive }}
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -62,10 +60,10 @@
                             {{ end }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ if .LastActivity.IsZero }}
+                            {{ if .LastSeen.IsZero }}
                             Brak danych
                             {{ else }}
-                            {{ .LastActivity.Format "02.01.2006 15:04:05" }}
+                            {{ .LastSeen.Format "02.01.2006 15:04:05" }}
                             {{ end }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
@@ -88,6 +86,17 @@
             </a>
         </div>
         {{ end }}
+        
+        <div class="flex justify-between mt-6">
+            <a href="/" class="text-blue-500 hover:text-blue-700">Strona główna</a>
+            <a href="/dashboard" class="text-blue-500 hover:text-blue-700">Panel użytkownika</a>
+        </div>
     </div>
+    
+    <footer class="bg-white py-4 mt-8">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            &copy; 2025 iSpindel.piwo.org - System do monitorowania fermentacji
+        </div>
+    </footer>
 </body>
 </html> 
