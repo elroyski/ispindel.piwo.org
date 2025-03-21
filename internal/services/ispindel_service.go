@@ -221,4 +221,23 @@ func (s *IspindelService) GetLatestMeasurements(ispindelID uint, limit int) ([]m
 	}
 
 	return measurements, nil
+}
+
+// GetMeasurementsForIspindelInRange pobiera pomiary dla danego urządzenia w określonym zakresie czasowym
+func (s *IspindelService) GetMeasurementsForIspindelInRange(ispindelID uint, startTime, endTime time.Time, limit int) ([]models.Measurement, error) {
+	var measurements []models.Measurement
+	
+	if limit <= 0 {
+		limit = 100 // Domyślny limit
+	}
+
+	if err := database.DB.Where("ispindel_id = ? AND timestamp BETWEEN ? AND ?", 
+		ispindelID, startTime, endTime).
+		Order("timestamp ASC").
+		Limit(limit).
+		Find(&measurements).Error; err != nil {
+		return nil, err
+	}
+
+	return measurements, nil
 } 
