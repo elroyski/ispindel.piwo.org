@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"ispindel.piwo.org/internal/models"
@@ -231,7 +232,12 @@ func (s *IspindelService) SaveMeasurement(ispindelID uint, data map[string]inter
 
 	// Dodaj Name do aktualizacji jeśli jest dostępne
 	if name, ok := data["name"].(string); ok && name != "" {
-		updates["name"] = name
+		// Usuń ID z nazwy jeśli występuje (format: "ID/name")
+		if parts := strings.Split(name, "/"); len(parts) > 1 {
+			updates["name"] = parts[1]
+		} else {
+			updates["name"] = name
+		}
 	}
 	
 	if err := database.DB.Model(&models.Ispindel{}).Where("id = ?", ispindelID).Updates(updates).Error; err != nil {
