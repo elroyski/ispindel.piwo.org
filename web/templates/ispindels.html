@@ -109,5 +109,41 @@
             &copy; 2025 iSpindel.piwo.org - System do monitorowania fermentacji
         </div>
     </footer>
+
+    <script>
+        // Funkcja do obsługi usuwania urządzenia
+        function deleteIspindel(id, name) {
+            if (confirm('Czy na pewno chcesz usunąć urządzenie ' + name + '?')) {
+                fetch('/ispindels/' + id + '/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.href = '/ispindels';
+                    } else {
+                        alert('Wystąpił błąd podczas usuwania urządzenia');
+                    }
+                }).catch(error => {
+                    alert('Wystąpił błąd: ' + error);
+                });
+            }
+            return false;
+        }
+
+        // Dodaj obsługę dla wszystkich przycisków usuwania
+        document.addEventListener('DOMContentLoaded', function() {
+            const deleteForms = document.querySelectorAll('form[action$="/delete"]');
+            deleteForms.forEach(form => {
+                form.onsubmit = function(e) {
+                    e.preventDefault();
+                    const id = form.action.split('/').slice(-2)[0];
+                    const name = form.closest('tr').querySelector('.font-medium').textContent;
+                    deleteIspindel(id, name);
+                };
+            });
+        });
+    </script>
 </body>
 </html> 
