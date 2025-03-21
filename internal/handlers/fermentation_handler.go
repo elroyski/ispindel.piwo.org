@@ -68,22 +68,30 @@ func (h *FermentationHandler) GetBeerStyles() ([]map[string]string, error) {
 		"style_id": "OWN",
 	})
 
-	// Przetwarzanie danych z pliku JSON
-	if stylesArray, ok := data["styles"].([]interface{}); ok {
-		for _, style := range stylesArray {
-			if styleMap, ok := style.(map[string]interface{}); ok {
-				// Pobierz tylko potrzebne pola
-				name, nameOk := styleMap["name"].(string)
-				category, categoryOk := styleMap["category"].(string)
-				styleID, styleIDOk := styleMap["style_id"].(string)
+	// Przetwarzanie danych z pliku JSON - sprawdzamy, czy dane są w oczekiwanej strukturze
+	beerJson, ok := data["beerjson"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("nieprawidłowa struktura pliku JSON - brak klucza beerjson")
+	}
+	
+	stylesArray, ok := beerJson["styles"].([]interface{})
+	if !ok {
+		return nil, fmt.Errorf("nieprawidłowa struktura pliku JSON - brak stylesArray w beerjson")
+	}
+	
+	for _, style := range stylesArray {
+		if styleMap, ok := style.(map[string]interface{}); ok {
+			// Pobierz tylko potrzebne pola
+			name, nameOk := styleMap["name"].(string)
+			category, categoryOk := styleMap["category"].(string)
+			styleID, styleIDOk := styleMap["style_id"].(string)
 
-				if nameOk && categoryOk && styleIDOk {
-					styles = append(styles, map[string]string{
-						"name":     name,
-						"category": category,
-						"style_id": styleID,
-					})
-				}
+			if nameOk && categoryOk && styleIDOk {
+				styles = append(styles, map[string]string{
+					"name":     name,
+					"category": category,
+					"style_id": styleID,
+				})
 			}
 		}
 	}
@@ -344,4 +352,34 @@ func (h *FermentationHandler) EndFermentation(c *gin.Context) {
 
 	// Przekieruj z powrotem do szczegółów fermentacji
 	c.Redirect(http.StatusSeeOther, "/fermentations/" + fermentationIDStr)
+}
+
+// DeleteFermentation usuwa zakończoną fermentację
+func (h *FermentationHandler) DeleteFermentation(c *gin.Context) {
+	// Pobierz zalogowanego użytkownika
+	user, exists := c.Get("user")
+	if !exists {
+		c.HTML(http.StatusUnauthorized, "login.html", gin.H{"error": "Wymagane zalogowanie"})
+		return
+	}
+
+	userModel := user.(*models.User)
+
+	// Pobierz ID fermentacji z parametrów URL
+	fermentationIDStr := c.Param("id")
+	fermentationID, err := strconv.ParseUint(fermentationIDStr, 10, 64)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "error.html", gin.H{"error": "Nieprawidłowe ID fermentacji"})
+		return
+	}
+
+	// Usuń fermentację
+	err = h.FermentationService.DeleteFermentation(uint(fermentationID), userModel.ID)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", gin.H{"error": "Błąd podczas usuwania fermentacji: " + err.Error()})
+		return
+	}
+
+	// Przekieruj do listy fermentacji
+	c.Redirect(http.StatusSeeOther, "/fermentations")
 } 

@@ -142,4 +142,21 @@ func (s *FermentationService) GetActiveIspindelsForUser(userID uint) ([]models.I
 	}
 	
 	return availableIspindels, nil
+}
+
+// DeleteFermentation usuwa fermentację
+func (s *FermentationService) DeleteFermentation(fermentationID, userID uint) error {
+	// Najpierw sprawdź, czy fermentacja istnieje i należy do użytkownika
+	fermentation, err := s.GetFermentationByID(fermentationID, userID)
+	if err != nil {
+		return err
+	}
+	
+	// Sprawdź, czy fermentacja jest już zakończona
+	if fermentation.IsActive {
+		return errors.New("nie można usunąć aktywnej fermentacji - najpierw ją zakończ")
+	}
+	
+	// Usuń fermentację
+	return database.DB.Delete(&models.Fermentation{}, fermentationID).Error
 } 

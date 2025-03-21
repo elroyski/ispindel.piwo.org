@@ -112,6 +112,7 @@ func main() {
 		fermentationGroup.POST("/create", fermentationHandler.CreateFermentation)
 		fermentationGroup.GET("/:id", fermentationHandler.FermentationDetails)
 		fermentationGroup.POST("/:id/end", fermentationHandler.EndFermentation)
+		fermentationGroup.POST("/:id/delete", fermentationHandler.DeleteFermentation)
 	}
 
 	// API endpoint dostępny bez autentykacji
