@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
@@ -321,7 +320,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 	// Pobierz dane pomiarowe dla iSpindel przypisanego do tej fermentacji
 	var measurements []models.Measurement
 	var hasData bool
-	var timestamps, temperatures, gravities, angles, batteries, rssiValues []interface{}
+	var timestamps, temperatures, gravities, angles, batteries []interface{}
 	
 	if fermentation.IspindelID > 0 {
 		// Pobierz dane pomiarowe dla tego urządzenia
@@ -339,7 +338,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		}
 		
 		// Pobierz dane pomiarowe z okresu fermentacji
-		measurements, err = h.IspindelService.GetMeasurementsForIspindelInRange(fermentation.IspindelID, startTime, endTime, 10)
+		measurements, err = h.IspindelService.GetMeasurementsForIspindelInRange(fermentation.IspindelID, startTime, endTime, 100)
 		if err == nil && len(measurements) > 0 {
 			hasData = true
 			
@@ -350,7 +349,6 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 				gravities = append(gravities, m.Gravity)
 				angles = append(angles, m.Angle)
 				batteries = append(batteries, m.Battery)
-				rssiValues = append(rssiValues, m.RSSI)
 			}
 		}
 	}
@@ -366,7 +364,6 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		"gravities":    gravities,
 		"angles":       angles,
 		"batteries":    batteries,
-		"rssi":         rssiValues,
 	})
 }
 
