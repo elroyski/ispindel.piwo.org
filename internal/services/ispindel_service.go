@@ -4,10 +4,13 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"fmt"
+	"log"
 	"time"
 
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/pkg/database"
+	"gorm.io/gorm"
 )
 
 type IspindelService struct{}
@@ -133,79 +136,76 @@ func (s *IspindelService) IsIspindelActive(ispindel *models.Ispindel) bool {
 	return ispindel.IsActive
 }
 
-// SaveMeasurement zapisuje pomiar z urządzenia iSpindel
-func (s *IspindelService) SaveMeasurement(ispindelID uint, data map[string]interface{}) (*models.Measurement, error) {
-	// Pobierz urządzenie aby upewnić się, że istnieje
-	var ispindel models.Ispindel
-	if err := database.DB.First(&ispindel, ispindelID).Error; err != nil {
-		return nil, errors.New("nie znaleziono urządzenia")
-	}
-
-	// Aktualizuj pole LastSeen
-	now := time.Now()
-	ispindel.LastSeen = now
-	if err := database.DB.Save(&ispindel).Error; err != nil {
-		return nil, err
-	}
-
-	// Przygotuj pomiar do zapisania
-	measurement := &models.Measurement{
-		IspindelID: ispindelID,
-		ReceivedAt: now,
-	}
-
-	// Pobierz dane z mapy
-	if val, ok := data["ID"].(float64); ok {
-		measurement.DeviceID = uint(val)
+// shouldSaveMeasurement sprawdza czy powinniśmy zapisać nowy pomiar
+func (s *IspindelService) shouldSaveMeasurement(ispindelID uint) (bool, error) {
+	var lastMeasurement models.Measurement
+	result := database.DB.Where("ispindel_id = ?", ispindelID).Order("timestamp desc").First(&lastMeasurement)
+	
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			// Jeśli nie ma wcześniejszych pomiarów, pozwól na zapis
+			return true, nil
+		}
+		return false, result.Error
 	}
 	
-	if val, ok := data["name"].(string); ok {
-		measurement.Name = val
+	// Sprawdź czy minęło co najmniej 900 sekund od ostatniego pomiaru
+	timeSinceLastMeasurement := time.Since(lastMeasurement.Timestamp)
+	return timeSinceLastMeasurement.Seconds() >= 900, nil
+}
+
+// SaveMeasurement zapisuje pomiar z urządzenia iSpindel
+func (s *IspindelService) SaveMeasurement(ispindelID uint, data map[string]interface{}) (*models.Measurement, error) {
+	// Sprawdź czy powinniśmy zapisać nowy pomiar
+	shouldSave, err := s.shouldSaveMeasurement(ispindelID)
+	if err != nil {
+		return nil, fmt.Errorf("błąd podczas sprawdzania czasu ostatniego pomiaru: %v", err)
+	}
+	
+	if !shouldSave {
+		return nil, fmt.Errorf("za częste pomiary - minimalny odstęp między pomiarami to 900 sekund (15 minut)")
 	}
 
-	if val, ok := data["angle"].(float64); ok {
-		measurement.Angle = val
+	// Kontynuuj normalny proces zapisu pomiaru...
+	measurement := &models.Measurement{
+		IspindelID:  ispindelID,
+		Timestamp:   time.Now(),
 	}
 
-	if val, ok := data["temperature"].(float64); ok {
-		measurement.Temperature = val
+	// Mapowanie pól z danych JSON na strukturę Measurement
+	if name, ok := data["name"].(string); ok {
+		measurement.Name = name
+	}
+	if deviceID, ok := data["ID"].(float64); ok {
+		measurement.DeviceID = uint(deviceID)
+	}
+	if angle, ok := data["angle"].(float64); ok {
+		measurement.Angle = angle
+	}
+	if temp, ok := data["temperature"].(float64); ok {
+		measurement.Temperature = temp
+	}
+	if battery, ok := data["battery"].(float64); ok {
+		measurement.Battery = battery
+	}
+	if gravity, ok := data["gravity"].(float64); ok {
+		measurement.Gravity = gravity
+	}
+	if interval, ok := data["interval"].(float64); ok {
+		measurement.Interval = int(interval)
+	}
+	if rssi, ok := data["RSSI"].(float64); ok {
+		measurement.RSSI = int(rssi)
 	}
 
-	if val, ok := data["temp_units"].(string); ok {
-		measurement.TempUnits = val
-	}
-
-	if val, ok := data["battery"].(float64); ok {
-		measurement.Battery = val
-	}
-
-	if val, ok := data["gravity"].(float64); ok {
-		measurement.Gravity = val
-	}
-
-	if val, ok := data["interval"].(float64); ok {
-		measurement.Interval = int(val)
-	}
-
-	if val, ok := data["RSSI"].(float64); ok {
-		measurement.RSSI = int(val)
-	}
-
-	// Przetwarzanie timestampu
-	if val, ok := data["timestamp"].(string); ok {
-		t, err := time.Parse("2006-01-02 15:04:05", val)
-		if err == nil {
-			measurement.Timestamp = t
-		} else {
-			measurement.Timestamp = now
-		}
-	} else {
-		measurement.Timestamp = now
-	}
-
-	// Zapisz pomiar
+	// Zapisz pomiar w bazie danych
 	if err := database.DB.Create(measurement).Error; err != nil {
-		return nil, err
+		return nil, fmt.Errorf("błąd podczas zapisywania pomiaru: %v", err)
+	}
+
+	// Zaktualizuj czas ostatniej aktywności urządzenia
+	if err := database.DB.Model(&models.Ispindel{}).Where("id = ?", ispindelID).Update("last_seen", time.Now()).Error; err != nil {
+		log.Printf("Błąd podczas aktualizacji czasu ostatniej aktywności urządzenia: %v", err)
 	}
 
 	return measurement, nil

@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -446,12 +447,21 @@ func (h *IspindelHandler) ReceiveDataNoAPIKey(c *gin.Context) {
 	// Zapisz pomiar
 	measurement, err := h.ispindelService.SaveMeasurement(ispindel.ID, data)
 	if err != nil {
-		log.Printf("Błąd zapisywania pomiaru bez klucza API w URL: %s, dane: %v", err.Error(), data)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Nie udało się zapisać danych: " + err.Error()})
+		if strings.Contains(err.Error(), "za częste pomiary") {
+			log.Printf("Odrzucono pomiar od urządzenia %s (ID: %d) - zbyt częste pomiary", ispindel.Name, ispindel.ID)
+			c.JSON(http.StatusTooManyRequests, gin.H{
+				"error": "Za częste pomiary",
+				"message": "Minimalny odstęp między pomiarami to 900 sekund (15 minut)",
+			})
+			return
+		}
+		
+		log.Printf("Błąd podczas zapisywania pomiaru dla urządzenia %s (ID: %d): %v", ispindel.Name, ispindel.ID, err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Nie udało się zapisać pomiaru"})
 		return
 	}
 
-	log.Printf("Pomyślnie zapisano pomiar dla urządzenia bez klucza API w URL: %s, temp: %.2f°, gęstość: %.4f", 
+	log.Printf("Pomyślnie zapisano pomiar dla urządzenia bez klucza API w URL: %s, temp: %.2f°, gęstość: %.4f",
 		ispindel.Name, measurement.Temperature, measurement.Gravity)
 		
 	c.JSON(http.StatusOK, gin.H{
