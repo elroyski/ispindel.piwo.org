@@ -4,16 +4,12 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/internal/services"
-	"ispindel.piwo.org/pkg/auth"
 )
 
 type FermentationHandler struct {

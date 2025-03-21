@@ -97,7 +97,15 @@ func main() {
 
 	// Grupa dla zarządzania fermentacjami (wymaga autoryzacji)
 	fermentationGroup := r.Group("/fermentations")
-	fermentationGroup.Use(authMiddleware.RequireAuth())
+	fermentationGroup.Use(func(c *gin.Context) {
+		_, exists := c.Get("user")
+		if !exists {
+			c.Redirect(http.StatusSeeOther, "/auth/login")
+			c.Abort()
+			return
+		}
+		c.Next()
+	})
 	{
 		fermentationGroup.GET("", fermentationHandler.FermentationsList)
 		fermentationGroup.GET("/new", fermentationHandler.NewFermentationForm)
