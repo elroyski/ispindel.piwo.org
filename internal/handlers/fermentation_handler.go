@@ -118,10 +118,41 @@ func (h *FermentationHandler) FermentationsList(c *gin.Context) {
 		return
 	}
 
+	// Dla każdej fermentacji pobierz ostatni pomiar, aby pokazać aktualne parametry
+	type FermentationWithLastMeasurement struct {
+		Fermentation models.Fermentation
+		HasData      bool
+		Gravity      float64
+		Temperature  float64
+		Battery      float64
+	}
+
+	var fermentationsWithData []FermentationWithLastMeasurement
+	
+	for _, f := range fermentations {
+		fermentationWithData := FermentationWithLastMeasurement{
+			Fermentation: f,
+			HasData:      false,
+		}
+		
+		// Pobierz ostatni pomiar, jeśli fermentacja ma przypisane urządzenie
+		if f.IspindelID > 0 {
+			measurements, err := h.IspindelService.GetLatestMeasurements(f.IspindelID, 1)
+			if err == nil && len(measurements) > 0 {
+				fermentationWithData.HasData = true
+				fermentationWithData.Gravity = measurements[0].Gravity
+				fermentationWithData.Temperature = measurements[0].Temperature
+				fermentationWithData.Battery = measurements[0].Battery
+			}
+		}
+		
+		fermentationsWithData = append(fermentationsWithData, fermentationWithData)
+	}
+	
 	// Renderuj szablon z listą fermentacji
 	c.HTML(http.StatusOK, "fermentations.html", gin.H{
 		"user":         userModel,
-		"fermentations": fermentations,
+		"fermentationsWithData": fermentationsWithData,
 	})
 }
 

@@ -28,42 +28,58 @@
             </a>
         </div>
 
-        {{if .fermentations}}
+        {{if .fermentationsWithData}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {{range .fermentations}}
+                {{range .fermentationsWithData}}
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div class="p-5 border-b{{if .IsActive}} bg-green-50 border-green-200{{else}} bg-gray-50 border-gray-200{{end}}">
+                    <div class="p-5 border-b{{if .Fermentation.IsActive}} bg-green-50 border-green-200{{else}} bg-gray-50 border-gray-200{{end}}">
                         <div class="flex justify-between items-start">
-                            <h2 class="text-xl font-semibold">{{.Name}}</h2>
-                            {{if .IsActive}}
+                            <h2 class="text-xl font-semibold">{{.Fermentation.Name}}</h2>
+                            {{if .Fermentation.IsActive}}
                             <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">Aktywna</span>
                             {{else}}
                             <span class="bg-gray-500 text-white text-xs font-bold px-2 py-1 rounded-full">Zakończona</span>
                             {{end}}
                         </div>
-                        {{if and .Style (ne .Style "")}}
+                        {{if and .Fermentation.Style (ne .Fermentation.Style "")}}
                         <p class="text-gray-600 text-sm mt-1">
-                            {{if ne .StyleID "OWN"}}
-                            <span class="font-medium">[{{.StyleID}}]</span> 
+                            {{if ne .Fermentation.StyleID "OWN"}}
+                            <span class="font-medium">[{{.Fermentation.StyleID}}]</span> 
                             {{end}}
-                            {{.Style}}
+                            {{.Fermentation.Style}}
                         </p>
                         {{end}}
                     </div>
                     <div class="p-5">
+                        {{if .HasData}}
+                        <div class="grid grid-cols-3 gap-2 mb-3">
+                            <div class="text-center p-2 bg-blue-50 rounded">
+                                <span class="font-semibold text-sm block">BLG</span>
+                                <span class="text-lg">{{printf "%.3f" .Gravity}}</span>
+                            </div>
+                            <div class="text-center p-2 bg-red-50 rounded">
+                                <span class="font-semibold text-sm block">Temp.</span>
+                                <span class="text-lg">{{printf "%.1f" .Temperature}}°C</span>
+                            </div>
+                            <div class="text-center p-2 bg-yellow-50 rounded">
+                                <span class="font-semibold text-sm block">Bateria</span>
+                                <span class="text-lg">{{printf "%.2f" .Battery}}V</span>
+                            </div>
+                        </div>
+                        {{end}}
                         <div class="flex justify-between items-center text-sm text-gray-600 mb-3">
                             <span>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                {{.StartedAt.Format "02.01.2006"}}
+                                {{.Fermentation.StartedAt.Format "02.01.2006"}}
                             </span>
                             <span>
-                                {{.GetDurationInDays}} dni
+                                {{.Fermentation.GetDurationInDays}} dni
                             </span>
                         </div>
                         
-                        <a href="/fermentations/{{.ID}}" class="block text-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition duration-200">
+                        <a href="/fermentations/{{.Fermentation.ID}}" class="block text-center bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition duration-200">
                             Szczegóły
                         </a>
                     </div>
