@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Błąd - iSpindel.piwo.org</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a class="font-bold text-xl" href="/">iSpindel</a>
+            <div class="flex items-center space-x-4">
+                {{if .user}}
+                <span>Witaj, {{.user.Name}}!</span>
+                <a href="/auth/logout" class="hover:text-blue-200">Wyloguj</a>
+                {{else}}
+                <a href="/auth/login" class="hover:text-blue-200">Zaloguj</a>
+                <a href="/auth/register" class="hover:text-blue-200">Zarejestruj</a>
+                {{end}}
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-16">
+        <div class="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-red-500 p-4">
+                <h2 class="text-white text-lg font-bold text-center">Wystąpił błąd</h2>
+            </div>
+            <div class="p-6">
+                <div class="text-red-600 mb-6">
+                    {{.error}}
+                </div>
+                
+                <div class="flex justify-between">
+                    <a href="javascript:history.back()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                        Wróć
+                    </a>
+                    <a href="/" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                        Strona główna
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-white py-4 mt-8 absolute bottom-0 w-full">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            &copy; 2023 iSpindel.piwo.org - System do monitorowania fermentacji
+        </div>
+    </footer>
+</body>
+</html> 
