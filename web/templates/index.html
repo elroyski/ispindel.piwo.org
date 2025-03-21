@@ -38,8 +38,8 @@
     <div class="container mt-5">
         <div class="row">
             <div class="col-md-12 text-center">
-                <h1>Witaj w iSpindel.piwo.org</h1>
-                <p class="lead">System do monitorowania fermentacji piwa</p>
+                <h1>Witaj w iSpindel</h1>
+                <p class="lead">System do monitorowania fermentacji</p>
                 {{if not .user}}
                 <div class="mt-4">
                     <a href="/auth/register" class="btn btn-primary me-2">Zarejestruj się</a>
@@ -47,12 +47,8 @@
                 </div>
                 {{else}}
                 <div class="mt-4">
-                    <h2>Witaj, {{.user.Name}}!</h2>
-                    <p>Jesteś zalogowany jako {{.user.Email}}</p>
-                    <div class="mt-4">
-                        <a href="/dashboard" class="btn btn-primary me-2">Panel główny</a>
-                        <a href="/auth/logout" class="btn btn-outline-danger">Wyloguj się</a>
-                    </div>
+                    <a href="/dashboard" class="btn btn-primary me-2">Panel główny</a>
+                    <a href="/auth/logout" class="btn btn-outline-danger">Wyloguj się</a>
                 </div>
                 {{end}}
             </div>
