@@ -79,10 +79,11 @@ func (s *IspindelService) GetIspindelByID(ispindelID, userID uint) (*models.Ispi
 
 // UpdateIspindel aktualizuje dane urządzenia
 func (s *IspindelService) UpdateIspindel(ispindel *models.Ispindel) error {
-	// Aktualizujemy tylko pola name i description
+	// Aktualizujemy pola name, description i is_active
 	return database.DB.Model(ispindel).Updates(map[string]interface{}{
 		"name":        ispindel.Name,
 		"description": ispindel.Description,
+		"is_active":   ispindel.IsActive,
 	}).Error
 }
 
@@ -121,10 +122,15 @@ func (s *IspindelService) RegenerateAPIKey(ispindelID, userID uint) (string, err
 // FindIspindelByAPIKey znajduje urządzenie na podstawie klucza API
 func (s *IspindelService) FindIspindelByAPIKey(apiKey string) (*models.Ispindel, error) {
 	var ispindel models.Ispindel
-	if err := database.DB.Where("api_key = ? AND is_active = ?", apiKey, true).First(&ispindel).Error; err != nil {
+	if err := database.DB.Where("api_key = ?", apiKey).First(&ispindel).Error; err != nil {
 		return nil, err
 	}
 	return &ispindel, nil
+}
+
+// IsIspindelActive sprawdza, czy urządzenie jest aktywne
+func (s *IspindelService) IsIspindelActive(ispindel *models.Ispindel) bool {
+	return ispindel.IsActive
 }
 
 // SaveMeasurement zapisuje pomiar z urządzenia iSpindel

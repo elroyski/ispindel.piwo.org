@@ -323,8 +323,23 @@ func (h *IspindelHandler) ReceiveData(c *gin.Context) {
 
 	ispindel, err := h.ispindelService.FindIspindelByAPIKey(apiKey)
 	if err != nil {
-		log.Printf("Nieprawidłowy klucz API: %s, błąd: %s", apiKey, err.Error())
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Nieprawidłowy klucz API"})
+		log.Printf("Nie znaleziono urządzenia dla klucza API %s: %v", apiKey, err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Nieprawidłowy klucz API"})
+		return
+	}
+
+	// Sprawdź, czy urządzenie jest aktywne
+	if !ispindel.IsActive {
+		log.Printf("Urządzenie %s (ID: %d) jest wyłączone przez użytkownika", ispindel.Name, ispindel.ID)
+		c.JSON(http.StatusForbidden, gin.H{"error": "Urządzenie wyłączone przez użytkownika"})
+		return
+	}
+
+	// Pobranie danych z ciała zapytania
+	var data map[string]interface{}
+	if err := c.BindJSON(&data); err != nil {
+		log.Printf("Błąd parsowania danych JSON: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Nieprawidłowe dane"})
 		return
 	}
 
@@ -332,66 +347,14 @@ func (h *IspindelHandler) ReceiveData(c *gin.Context) {
 	log.Printf("Odebrano dane dla urządzenia: %s (ID: %d) od adresu IP: %s", 
 		ispindel.Name, ispindel.ID, c.ClientIP())
 
-	// Odczytaj dane JSON z ciała żądania
-	var data map[string]interface{}
-	body, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		log.Printf("Błąd odczytu danych z żądania: %s", err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Nie udało się odczytać danych"})
-		return
-	}
-
 	// Wyświetl otrzymane dane w logach
-	log.Printf("Otrzymano dane: %s", string(body))
+	logData, _ := json.Marshal(data)
+	log.Printf("Otrzymano dane: %s", string(logData))
 
-	err = json.Unmarshal(body, &data)
-	if err != nil {
-		// Próbuj odczytać jako tablicę obiektów
-		var dataArray []map[string]interface{}
-		err = json.Unmarshal(body, &dataArray)
-		if err != nil {
-			log.Printf("Nieprawidłowy format danych JSON: %s", err.Error())
-			
-			// Sprawdź, czy to nie jest prosty tekst
-			if len(body) > 0 && !strings.Contains(string(body), "{") && !strings.Contains(string(body), "[") {
-				log.Printf("Otrzymano dane w formacie tekstowym zamiast JSON")
-				c.String(http.StatusOK, "Otrzymano dane tekstowe zamiast JSON. System wymaga danych w formacie JSON.")
-				return
-			}
-			
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Nieprawidłowy format danych JSON"})
-			return
-		}
-
-		// Przetwórz każdy element tablicy
-		successful := 0
-		failed := 0
-		
-		for _, item := range dataArray {
-			_, err := h.ispindelService.SaveMeasurement(ispindel.ID, item)
-			if err != nil {
-				failed++
-				log.Printf("Błąd zapisywania pomiaru z tablicy: %s, dane: %v", err.Error(), item)
-			} else {
-				successful++
-			}
-		}
-
-		log.Printf("Zapisano %d pomiarów z tablicy, niepowodzenie dla %d pomiarów", successful, failed)
-		c.JSON(http.StatusOK, gin.H{
-			"success": true,
-			"message": fmt.Sprintf("Pomyślnie zapisano dane: %d z %d", successful, successful+failed),
-			"count":   successful,
-			"failed":  failed,
-			"time":    time.Now(),
-		})
-		return
-	}
-
-	// Zapisz pojedynczy pomiar
+	// Zapisz pomiar
 	measurement, err := h.ispindelService.SaveMeasurement(ispindel.ID, data)
 	if err != nil {
-		log.Printf("Błąd zapisywania pojedynczego pomiaru: %s, dane: %v", err.Error(), data)
+		log.Printf("Błąd zapisywania pomiaru: %s, dane: %v", err.Error(), data)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Nie udało się zapisać danych: " + err.Error()})
 		return
 	}

@@ -31,6 +31,12 @@
                 Nieaktywny
             </span>
             {{ end }}
+            
+            {{ if not .ispindel.IsActive }}
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 ml-2">
+                Wyłączony przez użytkownika
+            </span>
+            {{ end }}
         </h1>
         
         <div class="bg-white rounded-lg shadow-md p-6 mb-6">
