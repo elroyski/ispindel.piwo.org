@@ -26,9 +26,6 @@ func main() {
 	// Inicjalizacja routera Gin
 	r := gin.Default()
 
-	// Konfiguracja szablonów HTML
-	r.LoadHTMLGlob("web/templates/*")
-
 	// Dodanie funkcji do konwersji danych na JSON
 	r.SetFuncMap(template.FuncMap{
 		"jsonify": func(v interface{}) template.JS {
@@ -36,6 +33,9 @@ func main() {
 			return template.JS(a)
 		},
 	})
+
+	// Konfiguracja szablonów HTML - musi być po SetFuncMap
+	r.LoadHTMLGlob("web/templates/*")
 
 	// Konfiguracja statycznych plików
 	r.Static("/static", "./web/static")
