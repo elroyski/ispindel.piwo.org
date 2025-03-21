@@ -44,7 +44,28 @@
                     <h3 class="font-medium text-gray-700 mb-2">Szczegóły urządzenia</h3>
                     <div class="grid grid-cols-2 gap-2 text-sm">
                         <div class="text-gray-500">ID urządzenia:</div>
-                        <div>{{ if .ispindel.DeviceID }}{{ .ispindel.DeviceID }}{{ else }}Nieznane{{ end }}</div>
+                        <div>
+                            {{ if .ispindel.DeviceID }}
+                                {{ .ispindel.DeviceID }}
+                            {{ else if and .measurements (gt (len .measurements) 0) }}
+                                {{ with index .measurements 0 }}
+                                    {{ if .DeviceID }}{{ .DeviceID }}{{ else }}Nieznane{{ end }}
+                                {{ end }}
+                            {{ else }}
+                                Nieznane
+                            {{ end }}
+                        </div>
+                        
+                        <div class="text-gray-500">Nazwa urządzenia:</div>
+                        <div>
+                            {{ if and .measurements (gt (len .measurements) 0) }}
+                                {{ with index .measurements 0 }}
+                                    {{ if and .Name (ne .Name "") }}{{ .Name }}{{ else }}Nie ustawiono w urządzeniu{{ end }}
+                                {{ end }}
+                            {{ else }}
+                                Nieznane
+                            {{ end }}
+                        </div>
                         
                         <div class="text-gray-500">Ostatnia aktywność:</div>
                         <div>{{ if .ispindel.LastSeen.IsZero }}Brak aktywności{{ else }}{{ .ispindel.LastSeen.Format "2006-01-02 15:04:05" }}{{ end }}</div>
