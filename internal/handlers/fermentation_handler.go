@@ -319,7 +319,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 	}
 
 	// Pobierz dane pomiarowe dla iSpindel przypisanego do tej fermentacji
-	var measurements []models.IspindelMeasurement
+	var measurements []models.Measurement
 	var hasData bool
 	var timestamps, temperatures, gravities, angles, batteries []interface{}
 	
