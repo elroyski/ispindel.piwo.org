@@ -4,7 +4,7 @@
 # =============================================================================
 
 # Konfiguracja ścieżek
-APP_DIR="/home/piwo/domains/ispindle.piwo.org/ispindle-web"
+APP_DIR="/home/piwo/domains/ispindel.piwo.org/ispindle-web"
 APP_NAME="ispindel"
 LOG_FILE="$APP_DIR/app.log"
 ENV_FILE="$APP_DIR/.env"
@@ -48,7 +48,7 @@ JWT_SECRET=twoj-tajny-klucz-jwt
 
 # Konfiguracja aplikacji
 PORT=49330
-APP_URL=https://ispindle.piwo.org
+APP_URL=https://ispindel.piwo.org
 
 # Konfiguracja SMTP
 SMTP_HOST=mail18.mydevil.net
