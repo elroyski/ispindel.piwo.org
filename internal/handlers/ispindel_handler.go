@@ -429,6 +429,13 @@ func (h *IspindelHandler) ReceiveDataNoAPIKey(c *gin.Context) {
 		return
 	}
 
+	// Sprawdź, czy urządzenie jest aktywne
+	if !ispindel.IsActive {
+		log.Printf("Urządzenie %s (ID: %d) jest wyłączone przez użytkownika", ispindel.Name, ispindel.ID)
+		c.JSON(http.StatusForbidden, gin.H{"error": "Urządzenie wyłączone przez użytkownika"})
+		return
+	}
+
 	// Loguj informację o otrzymanym żądaniu
 	log.Printf("Odebrano dane bez klucza API w URL dla urządzenia: %s (ID: %d) od adresu IP: %s", 
 		ispindel.Name, ispindel.ID, c.ClientIP())
