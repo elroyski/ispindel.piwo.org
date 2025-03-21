@@ -138,9 +138,8 @@ func (h *AuthHandler) Activate(c *gin.Context) {
 		return
 	}
 
-	c.HTML(http.StatusOK, "activation.html", gin.H{
-		"success": "Konto zostało pomyślnie aktywowane! Możesz się teraz zalogować.",
-	})
+	// Przekierowanie do strony logowania z parametrem informującym o pomyślnej aktywacji
+	c.Redirect(http.StatusSeeOther, "/auth/login?activation=true")
 }
 
 func (h *AuthHandler) ResendActivation(c *gin.Context) {
