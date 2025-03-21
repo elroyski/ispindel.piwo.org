@@ -64,9 +64,16 @@
                 </div>
                 
                 <div class="flex items-center justify-between mt-6">
-                    <a href="/ispindels" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
-                        Anuluj
-                    </a>
+                    <div class="flex space-x-4">
+                        <a href="/ispindels" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                            Anuluj
+                        </a>
+                        <button type="button" 
+                                onclick="deleteIspindel('{{ .ispindel.ID }}', '{{ .ispindel.Name }}')"
+                                class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                            Usuń urządzenie
+                        </button>
+                    </div>
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
                         Zapisz zmiany
                     </button>
@@ -87,6 +94,44 @@
     </footer>
 
     <script>
+        // Funkcja do usuwania urządzenia
+        function deleteIspindel(id, name) {
+            if (confirm('Czy na pewno chcesz usunąć urządzenie ' + name + '?')) {
+                fetch('/ispindels/' + id + '/delete', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (response.headers.get('content-type')?.includes('application/json')) {
+                        return response.json().then(data => {
+                            if (!response.ok) {
+                                throw new Error(data.error || 'Wystąpił błąd podczas usuwania urządzenia');
+                            }
+                            return data;
+                        });
+                    } else {
+                        if (!response.ok) {
+                            throw new Error('Wystąpił błąd podczas usuwania urządzenia');
+                        }
+                        return response.text().then(() => ({ message: 'success' }));
+                    }
+                })
+                .then(data => {
+                    if (data.message) {
+                        window.location.href = '/ispindels';
+                    } else {
+                        throw new Error('Nieoczekiwana odpowiedź z serwera');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(error.message || 'Wystąpił błąd podczas usuwania urządzenia');
+                });
+            }
+        }
+
         document.getElementById('regenerateApiKey').addEventListener('click', function() {
             if (confirm('Czy na pewno chcesz wygenerować nowy klucz API? Stary klucz przestanie działać i będziesz musiał zaktualizować konfigurację urządzenia.')) {
                 fetch('/ispindels/{{ .ispindel.ID }}/regenerate-key', {
