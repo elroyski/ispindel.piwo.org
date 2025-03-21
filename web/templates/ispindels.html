@@ -54,19 +54,19 @@
                             {{ end }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            {{ if .IsRecentlyActive }}
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                Aktywny
-                            </span>
+                            {{ if .IsActive }}
+                                {{ if .IsRecentlyActive }}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    Aktywny
+                                </span>
+                                {{ else }}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    Oczekuje na dane
+                                </span>
+                                {{ end }}
                             {{ else }}
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                Nieaktywny
-                            </span>
-                            {{ end }}
-                            
-                            {{ if not .IsActive }}
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 ml-2">
-                                Wyłączony
+                                Wyłączony przez użytkownika
                             </span>
                             {{ end }}
                         </td>

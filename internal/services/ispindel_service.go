@@ -319,12 +319,9 @@ func (s *IspindelService) checkAndUpdateDeviceActivity(ispindelID uint) error {
 	inactivityDuration := time.Since(ispindel.LastSeen)
 	isInactive := inactivityDuration.Hours() >= float64(inactivityTimeout)
 
-	// Aktualizuj stan aktywności tylko jeśli się zmienił
-	if ispindel.IsActive && isInactive {
-		if err := database.DB.Model(&ispindel).Update("is_active", false).Error; err != nil {
-			return err
-		}
-		log.Printf("Urządzenie iSpindel %d zostało oznaczone jako nieaktywne z powodu braku aktywności przez %v godzin", ispindelID, inactivityTimeout)
+	// Logujemy informację o długiej nieaktywności
+	if isInactive {
+		log.Printf("Urządzenie iSpindel %d nie wysłało danych przez %v godzin", ispindelID, inactivityTimeout)
 	}
 
 	return nil
