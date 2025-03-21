@@ -126,7 +126,7 @@ func (h *IspindelHandler) IspindelDetails(c *gin.Context) {
 	}
 
 	// Pobierz ostatnie pomiary
-	measurements, err := h.ispindelService.GetLatestMeasurements(ispindel.ID, 20)
+	measurements, err := h.ispindelService.GetLatestMeasurements(ispindel.ID, 5)
 	if err != nil {
 		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
 			"error": "Nie udało się pobrać pomiarów: " + err.Error(),
@@ -426,13 +426,6 @@ func (h *IspindelHandler) ReceiveDataNoAPIKey(c *gin.Context) {
 	if err != nil {
 		log.Printf("Nieprawidłowy klucz API: %s, błąd: %s", apiKey, err.Error())
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Nieprawidłowy klucz API"})
-		return
-	}
-
-	// Sprawdź, czy urządzenie jest aktywne
-	if !ispindel.IsActive {
-		log.Printf("Urządzenie %s (ID: %d) jest wyłączone przez użytkownika", ispindel.Name, ispindel.ID)
-		c.JSON(http.StatusForbidden, gin.H{"error": "Urządzenie wyłączone przez użytkownika"})
 		return
 	}
 
