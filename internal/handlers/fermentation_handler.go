@@ -469,4 +469,74 @@ func (h *FermentationHandler) DeleteFermentation(c *gin.Context) {
 
 	// Przekieruj do listy fermentacji
 	c.Redirect(http.StatusSeeOther, "/fermentations")
+}
+
+// ShowCharts wyświetla szczegółowe wykresy dla fermentacji
+func (h *FermentationHandler) ShowCharts(c *gin.Context) {
+	// Pobierz ID fermentacji z parametrów URL
+	fermentationID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "error.html", gin.H{
+			"error": "Nieprawidłowy identyfikator fermentacji",
+		})
+		return
+	}
+
+	// Pobierz użytkownika z kontekstu
+	user, exists := c.Get("user")
+	if !exists {
+		c.Redirect(http.StatusSeeOther, "/auth/login")
+		return
+	}
+	userModel := user.(*models.User)
+
+	// Pobierz fermentację
+	fermentation, err := h.FermentationService.GetFermentation(uint(fermentationID), userModel.ID)
+	if err != nil {
+		c.HTML(http.StatusNotFound, "error.html", gin.H{
+			"error": "Nie znaleziono fermentacji",
+			"user":  userModel,
+		})
+		return
+	}
+
+	// Pobierz wszystkie pomiary dla tej fermentacji
+	measurements, err := h.FermentationService.GetAllMeasurements(uint(fermentationID))
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
+			"error": "Błąd podczas pobierania pomiarów",
+			"user":  userModel,
+		})
+		return
+	}
+
+	// Przygotuj dane do wykresów
+	var timestamps []string
+	var temperatures []float64
+	var gravities []float64
+	var batteries []float64
+	var angles []float64
+	var rssi []int
+
+	for _, m := range measurements {
+		timestamps = append(timestamps, m.Timestamp.Format("02.01.2006 15:04"))
+		temperatures = append(temperatures, m.Temperature)
+		gravities = append(gravities, m.Gravity)
+		batteries = append(batteries, m.Battery)
+		angles = append(angles, m.Angle)
+		rssi = append(rssi, m.RSSI)
+	}
+
+	// Renderuj szablon z danymi
+	c.HTML(http.StatusOK, "fermentation_charts.html", gin.H{
+		"user":         userModel,
+		"fermentation": fermentation,
+		"hasData":      len(measurements) > 0,
+		"timestamps":   timestamps,
+		"temperatures": temperatures,
+		"gravities":    gravities,
+		"batteries":    batteries,
+		"angles":       angles,
+		"rssi":        rssi,
+	})
 } 

@@ -119,8 +119,9 @@ func main() {
 	{
 		fermentationGroup.GET("", fermentationHandler.FermentationsList)
 		fermentationGroup.GET("/new", fermentationHandler.NewFermentationForm)
-		fermentationGroup.POST("/create", fermentationHandler.CreateFermentation)
+		fermentationGroup.POST("/new", fermentationHandler.CreateFermentation)
 		fermentationGroup.GET("/:id", fermentationHandler.FermentationDetails)
+		fermentationGroup.GET("/:id/charts", fermentationHandler.ShowCharts)
 		fermentationGroup.POST("/:id/end", fermentationHandler.EndFermentation)
 		fermentationGroup.POST("/:id/delete", fermentationHandler.DeleteFermentation)
 	}

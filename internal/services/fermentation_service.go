@@ -159,4 +159,24 @@ func (s *FermentationService) DeleteFermentation(fermentationID, userID uint) er
 	
 	// Usuń fermentację
 	return database.DB.Delete(&models.Fermentation{}, fermentationID).Error
+}
+
+// GetFermentation pobiera szczegóły fermentacji po ID
+func (s *FermentationService) GetFermentation(id uint, userID uint) (*models.Fermentation, error) {
+	var fermentation models.Fermentation
+	err := database.DB.Where("id = ? AND user_id = ?", id, userID).First(&fermentation).Error
+	if err != nil {
+		return nil, err
+	}
+	return &fermentation, nil
+}
+
+// GetAllMeasurements pobiera wszystkie pomiary dla danej fermentacji
+func (s *FermentationService) GetAllMeasurements(fermentationID uint) ([]models.Measurement, error) {
+	var measurements []models.Measurement
+	err := database.DB.Where("fermentation_id = ?", fermentationID).Order("created_at DESC").Find(&measurements).Error
+	if err != nil {
+		return nil, err
+	}
+	return measurements, nil
 } 

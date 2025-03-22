@@ -97,7 +97,12 @@
             
             <!-- Wykresy i dane pomiarowe -->
             <div class="bg-white rounded-lg shadow-md p-6 lg:col-span-3">
-                <h2 class="text-lg font-semibold mb-4">Dane pomiarowe</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold">Dane pomiarowe</h2>
+                    <a href="/fermentations/{{.fermentation.ID}}/charts" class="text-blue-600 hover:text-blue-800 text-sm">
+                        Zobacz szczegółowe wykresy &rarr;
+                    </a>
+                </div>
                 
                 {{if .hasData}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">

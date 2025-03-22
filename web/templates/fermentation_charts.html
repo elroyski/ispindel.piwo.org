@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.fermentation.Name}} - Wykresy - iSpindel.piwo.org</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a class="font-bold text-xl" href="/">iSpindel</a>
+            <div class="flex items-center space-x-4">
+                <span>Witaj, {{.user.Name}}!</span>
+                <a href="/auth/logout" class="hover:text-blue-200">Wyloguj</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 class="text-2xl font-bold">{{.fermentation.Name}} - Wykresy</h1>
+                {{if and .fermentation.Style (ne .fermentation.Style "")}}
+                <p class="text-gray-600">
+                    {{if ne .fermentation.StyleID "OWN"}}
+                    <span class="font-medium">[{{.fermentation.StyleID}}]</span> 
+                    {{end}}
+                    {{.fermentation.Style}}
+                </p>
+                {{end}}
+            </div>
+            <div>
+                <a href="/fermentations/{{.fermentation.ID}}" class="text-blue-600 hover:text-blue-800">
+                    &larr; Powrót do szczegółów fermentacji
+                </a>
+            </div>
+        </div>
+
+        {{if .hasData}}
+        <div class="space-y-8">
+            <!-- Wykres temperatury -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold mb-4">Temperatura</h2>
+                <div class="h-96">
+                    <canvas id="temperatureChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Wykres gęstości -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold mb-4">Gęstość</h2>
+                <div class="h-96">
+                    <canvas id="gravityChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Wykres kąta wychylenia -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold mb-4">Kąt wychylenia</h2>
+                <div class="h-96">
+                    <canvas id="angleChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Wykres baterii i sygnału WiFi -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-lg font-semibold mb-4">Bateria i sygnał WiFi</h2>
+                <div class="h-96">
+                    <canvas id="batteryChart"></canvas>
+                </div>
+            </div>
+        </div>
+        {{else}}
+        <div class="bg-white rounded-lg shadow-md p-6 text-center">
+            <p class="text-gray-500">Brak danych pomiarowych dla tej fermentacji.</p>
+        </div>
+        {{end}}
+    </div>
+
+    <footer class="bg-white py-4 mt-8">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            &copy; 2025 iSpindel.piwo.org - System do monitorowania fermentacji
+        </div>
+    </footer>
+
+    {{if .hasData}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dane przekształcone do formatu JSON
+            var timestamps = {{.timestamps | jsonify}};
+            var temperatures = {{.temperatures | jsonify}};
+            var gravities = {{.gravities | jsonify}};
+            var batteries = {{.batteries | jsonify}};
+            var angles = {{.angles | jsonify}};
+            var rssi = {{.rssi | jsonify}};
+            
+            // Wspólne opcje dla wszystkich wykresów
+            var commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    }
+                }
+            };
+
+            // Wykres temperatury
+            new Chart(
+                document.getElementById('temperatureChart').getContext('2d'),
+                {
+                    type: 'line',
+                    data: {
+                        labels: timestamps,
+                        datasets: [{
+                            label: 'Temperatura (°C)',
+                            data: temperatures,
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        ...commonOptions,
+                        scales: {
+                            ...commonOptions.scales,
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Temperatura (°C)'
+                                },
+                                ticks: {
+                                    stepSize: 0.5
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+            // Wykres gęstości
+            new Chart(
+                document.getElementById('gravityChart').getContext('2d'),
+                {
+                    type: 'line',
+                    data: {
+                        labels: timestamps,
+                        datasets: [{
+                            label: 'Gęstość (Blg)',
+                            data: gravities,
+                            borderColor: 'rgb(54, 162, 235)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        ...commonOptions,
+                        scales: {
+                            ...commonOptions.scales,
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Gęstość (Blg)'
+                                },
+                                ticks: {
+                                    stepSize: 0.5
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+            // Wykres kąta wychylenia
+            new Chart(
+                document.getElementById('angleChart').getContext('2d'),
+                {
+                    type: 'line',
+                    data: {
+                        labels: timestamps,
+                        datasets: [{
+                            label: 'Kąt (°)',
+                            data: angles,
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        ...commonOptions,
+                        scales: {
+                            ...commonOptions.scales,
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Kąt (°)'
+                                },
+                                ticks: {
+                                    stepSize: 0.5
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+            // Wykres baterii i RSSI
+            new Chart(
+                document.getElementById('batteryChart').getContext('2d'),
+                {
+                    type: 'line',
+                    data: {
+                        labels: timestamps,
+                        datasets: [
+                            {
+                                label: 'Bateria (V)',
+                                data: batteries,
+                                borderColor: 'rgb(153, 102, 255)',
+                                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                                tension: 0.1,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'RSSI (dBm)',
+                                data: rssi,
+                                borderColor: 'rgb(255, 159, 64)',
+                                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                tension: 0.1,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        ...commonOptions,
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        },
+                        scales: {
+                            ...commonOptions.scales,
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Bateria (V)'
+                                },
+                                min: 3.0,
+                                max: 4.5,
+                                ticks: {
+                                    stepSize: 0.5
+                                }
+                            },
+                            y1: {
+                                title: {
+                                    display: true,
+                                    text: 'RSSI (dBm)'
+                                },
+                                position: 'right',
+                                grid: {
+                                    drawOnChartArea: false
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        });
+    </script>
+    {{end}}
+</body>
+</html> 
