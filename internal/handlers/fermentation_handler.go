@@ -116,6 +116,7 @@ type FermentationWithDuration struct {
 	*models.Fermentation
 	Duration        string
 	LastMeasurement *models.Measurement
+	Ispindel        models.Ispindel
 }
 
 // FermentationsList wyświetla listę fermentacji
@@ -150,10 +151,18 @@ func (h *FermentationHandler) FermentationsList(c *gin.Context) {
 			lastMeasurement = &measurements[len(measurements)-1]
 		}
 
+		// Pobierz urządzenie powiązane z fermentacją
+		ispindel, err := h.IspindelService.GetIspindelByID(fermentation.IspindelID, userModel.ID)
+		var ispindelData models.Ispindel
+		if err == nil {
+			ispindelData = *ispindel
+		}
+
 		fermentationsWithDuration = append(fermentationsWithDuration, FermentationWithDuration{
 			Fermentation:    &fermentation,
 			Duration:        h.FermentationService.GetFermentationDurationString(&fermentation),
 			LastMeasurement: lastMeasurement,
+			Ispindel:        ispindelData,
 		})
 	}
 

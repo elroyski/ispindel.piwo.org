@@ -65,10 +65,10 @@
                                 {{ .ispindel.DeviceID }}
                             {{ else if and .measurements (gt (len .measurements) 0) }}
                                 {{ with index .measurements 0 }}
-                                    {{ if .DeviceID }}{{ .DeviceID }}{{ else }}tyko{{ end }}
+                                    {{ if .DeviceID }}{{ .DeviceID }}{{ else }}Nieznane{{ end }}
                                 {{ end }}
                             {{ else }}
-                                tyko
+                                Nieznane
                             {{ end }}
                         </div>
                         
