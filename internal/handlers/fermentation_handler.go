@@ -87,8 +87,13 @@ func (h *FermentationHandler) GetBeerStyles() ([]map[string]string, error) {
 			styleID, styleIDOk := styleMap["style_id"].(string)
 
 			if nameOk && categoryOk && styleIDOk {
-				// Tworzymy nazwę w formacie [Kategoria] Nazwa [style_id]
-				formattedName := fmt.Sprintf("[%s] %s [%s]", category, name, styleID)
+				// Tworzymy nazwę w formacie [Kategoria] Nazwa [style_id], usuwając kategorię z nazwy jeśli występuje
+				cleanName := name
+				categoryPrefix := category + " "
+				if len(name) > len(categoryPrefix) && name[:len(categoryPrefix)] == categoryPrefix {
+					cleanName = name[len(categoryPrefix):]
+				}
+				formattedName := fmt.Sprintf("[%s] %s [%s]", category, cleanName, styleID)
 				styles = append(styles, map[string]string{
 					"name":     formattedName,
 					"category": category,
