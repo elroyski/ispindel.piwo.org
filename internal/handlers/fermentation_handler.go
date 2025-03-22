@@ -349,8 +349,8 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		return
 	}
 
-	// Pobierz pomiary z ostatnich 12 godzin dla wykresów
-	measurementsLast12h, err := h.FermentationService.GetMeasurementsLast12Hours(uint(fermentationID))
+	// Pobierz pomiary z ostatnich 12 godzin dla wykresów (co godzinę)
+	measurementsLast12h, err := h.FermentationService.GetHourlyMeasurementsLast12Hours(uint(fermentationID))
 	if err != nil {
 		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
 			"error": "Błąd podczas pobierania pomiarów",
@@ -369,7 +369,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		return
 	}
 
-	// Przygotuj dane do wykresów (ostatnie 12h)
+	// Przygotuj dane do wykresów (ostatnie 12h, co godzinę)
 	var timestamps []string
 	var temperatures []float64
 	var gravities []float64

@@ -224,6 +224,46 @@ func (s *FermentationService) GetMeasurementsLast12Hours(fermentationID uint) ([
 	return measurements, nil
 }
 
+// GetHourlyMeasurementsLast12Hours pobiera pomiary z ostatnich 12 godzin dla danej fermentacji, jeden pomiar na godzinę
+func (s *FermentationService) GetHourlyMeasurementsLast12Hours(fermentationID uint) ([]models.Measurement, error) {
+	// Najpierw pobierz fermentację, aby uzyskać ispindel_id
+	var fermentation models.Fermentation
+	if err := database.DB.First(&fermentation, fermentationID).Error; err != nil {
+		return nil, err
+	}
+
+	// Przygotuj zapytanie bazowe
+	query := database.DB.Model(&models.Measurement{}).
+		Where("ispindel_id = ?", fermentation.IspindelID)
+
+	// Dodaj warunek na zakres dat - ostatnie 12 godzin
+	twelveHoursAgo := time.Now().Add(-12 * time.Hour)
+	query = query.Where("timestamp >= ?", twelveHoursAgo)
+
+	// Grupuj po godzinie używając składni MySQL
+	query = query.Select("MIN(id) as id").
+		Group("DATE_FORMAT(timestamp, '%Y-%m-%d %H:00:00')")
+
+	// Pobierz ID pomiarów
+	var measurementIDs []uint
+	if err := query.Pluck("id", &measurementIDs).Error; err != nil {
+		return nil, err
+	}
+
+	// Pobierz pełne rekordy pomiarów
+	var measurements []models.Measurement
+	if len(measurementIDs) > 0 {
+		err := database.DB.Where("id IN ?", measurementIDs).
+			Order("timestamp ASC").
+			Find(&measurements).Error
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return measurements, nil
+}
+
 // FermentationDuration reprezentuje czas trwania fermentacji
 type FermentationDuration struct {
 	Days    int
