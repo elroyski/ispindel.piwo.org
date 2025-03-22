@@ -173,10 +173,27 @@ func (s *FermentationService) GetFermentation(id uint, userID uint) (*models.Fer
 
 // GetAllMeasurements pobiera wszystkie pomiary dla danej fermentacji
 func (s *FermentationService) GetAllMeasurements(fermentationID uint) ([]models.Measurement, error) {
+	// Najpierw pobierz fermentację, aby uzyskać ispindel_id i zakres dat
+	var fermentation models.Fermentation
+	if err := database.DB.First(&fermentation, fermentationID).Error; err != nil {
+		return nil, err
+	}
+
+	// Przygotuj zapytanie bazowe
+	query := database.DB.Where("ispindel_id = ?", fermentation.IspindelID)
+
+	// Dodaj warunek na zakres dat
+	query = query.Where("timestamp >= ?", fermentation.StartedAt)
+	if !fermentation.IsActive && fermentation.EndedAt != nil {
+		query = query.Where("timestamp <= ?", fermentation.EndedAt)
+	}
+
+	// Pobierz pomiary
 	var measurements []models.Measurement
-	err := database.DB.Where("fermentation_id = ?", fermentationID).Order("created_at DESC").Find(&measurements).Error
+	err := query.Order("timestamp DESC").Find(&measurements).Error
 	if err != nil {
 		return nil, err
 	}
+
 	return measurements, nil
 } 
