@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"ispindel.piwo.org/internal/models"
@@ -87,13 +88,22 @@ func (h *FermentationHandler) GetBeerStyles() ([]map[string]string, error) {
 			styleID, styleIDOk := styleMap["style_id"].(string)
 
 			if nameOk && categoryOk && styleIDOk {
-				// Tworzymy nazwę w formacie [Kategoria] Nazwa [style_id], usuwając kategorię z nazwy jeśli występuje
+				// Usuń kategorię z nazwy jeśli występuje na początku
 				cleanName := name
-				categoryPrefix := category + " "
-				if len(name) > len(categoryPrefix) && name[:len(categoryPrefix)] == categoryPrefix {
-					cleanName = name[len(categoryPrefix):]
+				if category != "" {
+					prefix := category + " "
+					if len(name) > len(prefix) && name[:len(prefix)] == prefix {
+						cleanName = name[len(prefix):]
+					}
 				}
+				
+				// Tworzymy nazwę w formacie [Kategoria] Nazwa [style_id]
 				formattedName := fmt.Sprintf("[%s] %s [%s]", category, cleanName, styleID)
+				
+				// Usuń zduplikowane nawiasy kwadratowe
+				formattedName = strings.ReplaceAll(formattedName, "[[", "[")
+				formattedName = strings.ReplaceAll(formattedName, "]]", "]")
+				
 				styles = append(styles, map[string]string{
 					"name":     formattedName,
 					"category": category,
