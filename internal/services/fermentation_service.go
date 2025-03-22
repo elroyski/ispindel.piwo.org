@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"ispindel.piwo.org/internal/models"
@@ -196,4 +197,57 @@ func (s *FermentationService) GetAllMeasurements(fermentationID uint) ([]models.
 	}
 
 	return measurements, nil
+}
+
+// FermentationDuration reprezentuje czas trwania fermentacji
+type FermentationDuration struct {
+	Days    int
+	Hours   int
+	Minutes int
+}
+
+// GetFermentationDuration oblicza czas trwania fermentacji
+func (s *FermentationService) GetFermentationDuration(fermentation *models.Fermentation) FermentationDuration {
+	var endTime time.Time
+	if fermentation.IsActive {
+		endTime = time.Now()
+	} else if fermentation.EndedAt != nil {
+		endTime = *fermentation.EndedAt
+	} else {
+		endTime = time.Now()
+	}
+
+	duration := endTime.Sub(fermentation.StartedAt)
+	
+	totalHours := int(duration.Hours())
+	days := totalHours / 24
+	hours := totalHours % 24
+	minutes := int(duration.Minutes()) % 60
+
+	return FermentationDuration{
+		Days:    days,
+		Hours:   hours,
+		Minutes: minutes,
+	}
+}
+
+// GetFermentationDurationString zwraca sformatowany string z czasem trwania fermentacji
+func (s *FermentationService) GetFermentationDurationString(fermentation *models.Fermentation) string {
+	duration := s.GetFermentationDuration(fermentation)
+	
+	if duration.Days > 0 {
+		if duration.Hours > 0 {
+			return fmt.Sprintf("%d dni %d godz", duration.Days, duration.Hours)
+		}
+		return fmt.Sprintf("%d dni", duration.Days)
+	}
+	
+	if duration.Hours > 0 {
+		if duration.Minutes > 0 {
+			return fmt.Sprintf("%d godz %d min", duration.Hours, duration.Minutes)
+		}
+		return fmt.Sprintf("%d godz", duration.Hours)
+	}
+	
+	return fmt.Sprintf("%d min", duration.Minutes)
 } 

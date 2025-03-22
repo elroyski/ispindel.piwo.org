@@ -100,59 +100,55 @@ func (h *FermentationHandler) GetBeerStyles() ([]map[string]string, error) {
 	return styles, nil
 }
 
-// FermentationsList wyświetla listę fermentacji użytkownika
+// FermentationWithDuration reprezentuje fermentację wraz z czasem trwania
+type FermentationWithDuration struct {
+	*models.Fermentation
+	Duration string
+	LastMeasurement *models.Measurement
+}
+
+// FermentationsList wyświetla listę fermentacji
 func (h *FermentationHandler) FermentationsList(c *gin.Context) {
-	// Pobierz zalogowanego użytkownika
 	user, exists := c.Get("user")
 	if !exists {
-		c.HTML(http.StatusUnauthorized, "login.html", gin.H{"error": "Wymagane zalogowanie"})
+		c.HTML(http.StatusUnauthorized, "error.html", gin.H{
+			"error": "Nie jesteś zalogowany",
+		})
 		return
 	}
-
 	userModel := user.(*models.User)
 
-	// Pobierz fermentacje użytkownika
 	fermentations, err := h.FermentationService.GetFermentationsByUserID(userModel.ID)
 	if err != nil {
-		c.HTML(http.StatusInternalServerError, "error.html", gin.H{"error": "Błąd podczas pobierania danych: " + err.Error()})
+		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
+			"error": "Błąd podczas pobierania listy fermentacji",
+			"user":  userModel,
+		})
 		return
 	}
 
-	// Dla każdej fermentacji pobierz ostatni pomiar, aby pokazać aktualne parametry
-	type FermentationWithLastMeasurement struct {
-		Fermentation models.Fermentation
-		HasData      bool
-		Gravity      float64
-		Temperature  float64
-		Battery      float64
+	// Przygotuj dane z czasem trwania
+	var fermentationsWithDuration []FermentationWithDuration
+	for _, f := range fermentations {
+		fermentation := f // Utwórz kopię, aby uniknąć problemów z wskaźnikami w pętli
+		
+		// Pobierz ostatni pomiar dla tej fermentacji
+		measurements, err := h.FermentationService.GetAllMeasurements(fermentation.ID)
+		var lastMeasurement *models.Measurement
+		if err == nil && len(measurements) > 0 {
+			lastMeasurement = &measurements[len(measurements)-1]
+		}
+
+		fermentationsWithDuration = append(fermentationsWithDuration, FermentationWithDuration{
+			Fermentation: &fermentation,
+			Duration:    h.FermentationService.GetFermentationDurationString(&fermentation),
+			LastMeasurement: lastMeasurement,
+		})
 	}
 
-	var fermentationsWithData []FermentationWithLastMeasurement
-	
-	for _, f := range fermentations {
-		fermentationWithData := FermentationWithLastMeasurement{
-			Fermentation: f,
-			HasData:      false,
-		}
-		
-		// Pobierz ostatni pomiar, jeśli fermentacja ma przypisane urządzenie
-		if f.IspindelID > 0 {
-			measurements, err := h.IspindelService.GetLatestMeasurements(f.IspindelID, 1)
-			if err == nil && len(measurements) > 0 {
-				fermentationWithData.HasData = true
-				fermentationWithData.Gravity = measurements[0].Gravity
-				fermentationWithData.Temperature = measurements[0].Temperature
-				fermentationWithData.Battery = measurements[0].Battery
-			}
-		}
-		
-		fermentationsWithData = append(fermentationsWithData, fermentationWithData)
-	}
-	
-	// Renderuj szablon z listą fermentacji
 	c.HTML(http.StatusOK, "fermentations.html", gin.H{
 		"user":         userModel,
-		"fermentationsWithData": fermentationsWithData,
+		"fermentations": fermentationsWithDuration,
 	})
 }
 
