@@ -189,9 +189,9 @@ func (s *FermentationService) GetAllMeasurements(fermentationID uint) ([]models.
 		query = query.Where("timestamp <= ?", fermentation.EndedAt)
 	}
 
-	// Pobierz pomiary - sortowanie rosnąco po timestamp
+	// Pobierz pomiary - sortowanie malejąco po timestamp (od najnowszych)
 	var measurements []models.Measurement
-	err := query.Order("timestamp ASC").Find(&measurements).Error
+	err := query.Order("timestamp DESC").Find(&measurements).Error
 	if err != nil {
 		return nil, err
 	}
