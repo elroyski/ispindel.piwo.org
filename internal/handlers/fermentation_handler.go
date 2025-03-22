@@ -390,7 +390,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		return
 	}
 
-	// Sortuj pomiary chronologicznie (od najstarszych do najnowszych)
+	// Sortuj pomiary chronologicznie (od najstarszych do najnowszych) dla wykresów
 	services.SortMeasurementsChronologically(measurementsLast12h)
 
 	// Pobierz wszystkie pomiary dla tabeli (tylko ostatnie 15)
@@ -403,8 +403,8 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		return
 	}
 
-	// Sortuj pomiary chronologicznie (od najstarszych do najnowszych)
-	services.SortMeasurementsChronologically(allMeasurements)
+	// Nie sortujemy pomiarów dla tabeli - zachowujemy kolejność malejącą (od najnowszych)
+	// aby najnowsze pomiary były widoczne na górze tabeli
 
 	// Przygotuj dane do wykresów (ostatnie 12h, co godzinę)
 	var timestamps []string
