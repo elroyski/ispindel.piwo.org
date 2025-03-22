@@ -46,7 +46,7 @@
                                 <div class="font-medium text-gray-900">{{ .Name }}</div>
                                 {{ if .Description }}<div class="text-sm text-gray-500">{{ .Description }}</div>{{ end }}
                                 <div class="sm:hidden text-xs text-gray-500 mt-1">
-                                    ID: {{ if .DeviceID }}{{ .DeviceID }}{{ else }}Brak ID{{ end }}
+                                    ID: {{ if .DeviceID }}{{ .DeviceID }}{{ else }}tyko{{ end }}
                                 </div>
                                 <div class="sm:hidden text-xs text-gray-500">
                                     {{ if .LastSeen.IsZero }}
@@ -60,7 +60,7 @@
                                 {{ if .DeviceID }}
                                     {{ .DeviceID }}
                                 {{ else }}
-                                    Brak ID
+                                    tyko
                                 {{ end }}
                             </td>
                             <td class="px-3 py-2">
