@@ -75,7 +75,7 @@
                     <select id="style_id" name="style_id" class="w-full">
                         {{range .beerStyles}}
                         <option value="{{.style_id}}" {{if eq $.style_id .style_id}}selected{{end}}>
-                            {{if ne .category ""}}[{{.category}}] {{end}}{{.name}}
+                            {{.name}}
                         </option>
                         {{end}}
                     </select>
