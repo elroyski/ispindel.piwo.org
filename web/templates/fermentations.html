@@ -28,9 +28,9 @@
             </a>
         </div>
 
-        {{if .fermentationsWithData}}
+        {{if .fermentations}}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {{range .fermentationsWithData}}
+                {{range .fermentations}}
                 <div class="bg-white rounded-lg shadow-md overflow-hidden">
                     <div class="p-5 border-b{{if .Fermentation.IsActive}} bg-green-50 border-green-200{{else}} bg-gray-50 border-gray-200{{end}}">
                         <div class="flex justify-between items-start">
@@ -51,19 +51,19 @@
                         {{end}}
                     </div>
                     <div class="p-5">
-                        {{if .HasData}}
+                        {{if .LastMeasurement}}
                         <div class="grid grid-cols-3 gap-2 mb-3">
                             <div class="text-center p-2 bg-blue-50 rounded">
                                 <span class="font-semibold text-sm block">BLG</span>
-                                <span class="text-lg">{{printf "%.3f" .Gravity}}</span>
+                                <span class="text-lg">{{printf "%.3f" .LastMeasurement.Gravity}}</span>
                             </div>
                             <div class="text-center p-2 bg-red-50 rounded">
                                 <span class="font-semibold text-sm block">Temp.</span>
-                                <span class="text-lg">{{printf "%.1f" .Temperature}}°C</span>
+                                <span class="text-lg">{{printf "%.1f" .LastMeasurement.Temperature}}°C</span>
                             </div>
                             <div class="text-center p-2 bg-yellow-50 rounded">
                                 <span class="font-semibold text-sm block">Bateria</span>
-                                <span class="text-lg">{{printf "%.2f" .Battery}}V</span>
+                                <span class="text-lg">{{printf "%.2f" .LastMeasurement.Battery}}V</span>
                             </div>
                         </div>
                         {{end}}
@@ -75,7 +75,7 @@
                                 {{.Fermentation.StartedAt.Format "02.01.2006"}}
                             </span>
                             <span>
-                                {{.Fermentation.GetDurationInDays}} dni
+                                {{.Duration}}
                             </span>
                         </div>
                         
