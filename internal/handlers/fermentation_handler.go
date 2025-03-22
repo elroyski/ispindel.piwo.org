@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"ispindel.piwo.org/internal/models"
@@ -321,90 +320,83 @@ func (h *FermentationHandler) CreateFermentation(c *gin.Context) {
 
 // FermentationDetails wyświetla szczegóły fermentacji
 func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
-	// Pobierz zalogowanego użytkownika
 	user, exists := c.Get("user")
 	if !exists {
-		c.HTML(http.StatusUnauthorized, "login.html", gin.H{"error": "Wymagane zalogowanie"})
+		c.HTML(http.StatusUnauthorized, "error.html", gin.H{
+			"error": "Nie jesteś zalogowany",
+		})
 		return
 	}
-
 	userModel := user.(*models.User)
 
-	// Pobierz ID fermentacji z parametrów URL
-	fermentationIDStr := c.Param("id")
-	fermentationID, err := strconv.ParseUint(fermentationIDStr, 10, 64)
+	// Pobierz ID fermentacji z URL
+	fermentationID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
-		c.HTML(http.StatusBadRequest, "error.html", gin.H{"error": "Nieprawidłowe ID fermentacji"})
+		c.HTML(http.StatusBadRequest, "error.html", gin.H{
+			"error": "Nieprawidłowy identyfikator fermentacji",
+			"user":  userModel,
+		})
 		return
 	}
 
-	// Pobierz szczegóły fermentacji
-	fermentation, err := h.FermentationService.GetFermentationByID(uint(fermentationID), userModel.ID)
+	// Pobierz fermentację
+	fermentation, err := h.FermentationService.GetFermentation(uint(fermentationID), userModel.ID)
 	if err != nil {
-		c.HTML(http.StatusNotFound, "error.html", gin.H{"error": "Nie znaleziono fermentacji: " + err.Error()})
+		c.HTML(http.StatusNotFound, "error.html", gin.H{
+			"error": "Nie znaleziono fermentacji",
+			"user":  userModel,
+		})
 		return
 	}
 
-	// Pobierz dane pomiarowe dla iSpindel przypisanego do tej fermentacji
-	var measurements []models.Measurement
-	var hasData bool
-	var timestamps, temperatures, gravities, angles, batteries, rssi []interface{}
-	
-	if fermentation.IspindelID > 0 {
-		// Pobierz dane pomiarowe dla tego urządzenia
-		// Jeśli fermentacja jest aktywna, pobierz dane od momentu rozpoczęcia
-		// Jeśli fermentacja jest zakończona, pobierz dane z całego okresu fermentacji
-		var startTime, endTime time.Time
-		startTime = fermentation.StartedAt
-		
-		if fermentation.IsActive {
-			endTime = time.Now()
-		} else if fermentation.EndedAt != nil {
-			endTime = *fermentation.EndedAt
-		} else {
-			endTime = time.Now()
-		}
-		
-		// Pobierz dane pomiarowe z okresu fermentacji
-		measurements, err = h.IspindelService.GetMeasurementsForIspindelInRange(fermentation.IspindelID, startTime, endTime, 15)
-		if err == nil && len(measurements) > 0 {
-			hasData = true
-			
-			// Kopiujemy pomiary dla wykresów i odwracamy ich kolejność,
-			// żeby były w porządku chronologicznym
-			measurementsForCharts := make([]models.Measurement, len(measurements))
-			copy(measurementsForCharts, measurements)
-			
-			// Odwracamy kolejność dla wykresów - chcemy je wyświetlać chronologicznie
-			for i, j := 0, len(measurementsForCharts)-1; i < j; i, j = i+1, j-1 {
-				measurementsForCharts[i], measurementsForCharts[j] = measurementsForCharts[j], measurementsForCharts[i]
-			}
-			
-			// Przygotuj dane do wykresów w chronologicznej kolejności
-			for _, m := range measurementsForCharts {
-				timestamps = append(timestamps, m.Timestamp.Format("02.01 15:04"))
-				temperatures = append(temperatures, m.Temperature)
-				gravities = append(gravities, m.Gravity)
-				angles = append(angles, m.Angle)
-				batteries = append(batteries, m.Battery)
-				rssi = append(rssi, m.RSSI)
-			}
-		}
+	// Pobierz pomiary
+	measurements, err := h.FermentationService.GetAllMeasurements(uint(fermentationID))
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
+			"error": "Błąd podczas pobierania pomiarów",
+			"user":  userModel,
+		})
+		return
 	}
 
-	// Renderuj szablon szczegółów fermentacji
+	// Przygotuj dane do wykresów
+	var timestamps []string
+	var temperatures []float64
+	var gravities []float64
+	var batteries []float64
+	var angles []float64
+	var rssi []int
+
+	for _, m := range measurements {
+		timestamps = append(timestamps, m.Timestamp.Format("02.01.2006 15:04"))
+		temperatures = append(temperatures, m.Temperature)
+		gravities = append(gravities, m.Gravity)
+		batteries = append(batteries, m.Battery)
+		angles = append(angles, m.Angle)
+		rssi = append(rssi, m.RSSI)
+	}
+
+	// Przygotuj dane do szablonu
 	c.HTML(http.StatusOK, "fermentation_details.html", gin.H{
 		"user":         userModel,
 		"fermentation": fermentation,
-		"hasData":      hasData,
-		"measurements": measurements,
+		"duration":     h.FermentationService.GetFermentationDurationString(fermentation),
+		"hasData":      len(measurements) > 0,
+		"measurements": measurements[:min(len(measurements), 15)], // Pokaż tylko ostatnie 15 pomiarów
 		"timestamps":   timestamps,
 		"temperatures": temperatures,
 		"gravities":    gravities,
-		"angles":       angles,
 		"batteries":    batteries,
-		"rssi":         rssi,
+		"angles":       angles,
+		"rssi":        rssi,
 	})
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // EndFermentation kończy aktywną fermentację
