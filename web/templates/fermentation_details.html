@@ -65,7 +65,7 @@
                     
                     <div>
                         <p class="text-gray-600 text-sm">Urządzenie</p>
-                        <p class="font-medium">ID: {{.fermentation.Ispindel.ID}} / {{.fermentation.Ispindel.Name}}{{if .fermentation.Ispindel.Description}} ({{.fermentation.Ispindel.Description}}){{end}}</p>
+                        <p class="font-medium">ID: {{if .fermentation.Ispindel.DeviceID}}{{.fermentation.Ispindel.DeviceID}}{{else}}Brak ID{{end}} / {{.fermentation.Ispindel.Name}}{{if .fermentation.Ispindel.Description}} ({{.fermentation.Ispindel.Description}}){{end}}</p>
                     </div>
                     
                     {{if and .fermentation.Description (ne .fermentation.Description "")}}
