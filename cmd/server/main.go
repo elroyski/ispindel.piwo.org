@@ -1,12 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"html/template"
+	"log"
 	"net/http"
 	"os"
-	"log"
-	"encoding/json"
-	"html/template"
 
 	"github.com/gin-gonic/gin"
 	"ispindel.piwo.org/internal/handlers"
@@ -19,7 +19,7 @@ import (
 func main() {
 	// Inicjalizacja bazy danych
 	database.InitDB()
-	
+
 	// Inicjalizacja mailera
 	mailer.InitMailer()
 
@@ -171,7 +171,7 @@ func main() {
 	} else {
 		log.Println("Używam URL aplikacji z zmiennej środowiskowej:", appURL)
 	}
-	
+
 	// Dodatkowe sprawdzenie zmiennej APP_URL
 	log.Printf("Ostateczna wartość APP_URL: %s", os.Getenv("APP_URL"))
 
@@ -180,4 +180,4 @@ func main() {
 	if err := r.Run(fmt.Sprintf(":%s", port)); err != nil {
 		panic(err)
 	}
-} 
+}

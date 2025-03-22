@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"gorm.io/gorm"
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/pkg/database"
-	"gorm.io/gorm"
 )
 
 type IspindelService struct{}
@@ -156,7 +156,7 @@ func (s *IspindelService) IsIspindelActive(ispindel *models.Ispindel) bool {
 func (s *IspindelService) shouldSaveMeasurement(ispindelID uint) (bool, error) {
 	var lastMeasurement models.Measurement
 	result := database.DB.Where("ispindel_id = ?", ispindelID).Order("timestamp desc").First(&lastMeasurement)
-	
+
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			// Jeśli nie ma wcześniejszych pomiarów, pozwól na zapis
@@ -164,7 +164,7 @@ func (s *IspindelService) shouldSaveMeasurement(ispindelID uint) (bool, error) {
 		}
 		return false, result.Error
 	}
-	
+
 	// Pobierz minimalny interwał z zmiennej środowiskowej
 	minInterval := 900 // domyślna wartość 900 sekund (15 minut)
 	if envInterval := os.Getenv("ISPINDEL_MIN_INTERVAL"); envInterval != "" {
@@ -174,7 +174,7 @@ func (s *IspindelService) shouldSaveMeasurement(ispindelID uint) (bool, error) {
 			log.Printf("Błąd podczas parsowania ISPINDEL_MIN_INTERVAL: %v, używam wartości domyślnej 900", err)
 		}
 	}
-	
+
 	// Sprawdź czy minął wymagany czas od ostatniego pomiaru
 	timeSinceLastMeasurement := time.Since(lastMeasurement.Timestamp)
 	return timeSinceLastMeasurement.Seconds() >= float64(minInterval), nil
@@ -187,28 +187,28 @@ func (s *IspindelService) SaveMeasurement(ispindelID uint, data map[string]inter
 	if err != nil {
 		return nil, fmt.Errorf("błąd podczas sprawdzania czasu ostatniego pomiaru: %v", err)
 	}
-	
+
 	if !shouldSave {
 		return nil, fmt.Errorf("za częste pomiary - minimalny odstęp między pomiarami to 900 sekund (15 minut)")
 	}
 
 	// Kontynuuj normalny proces zapisu pomiaru...
 	measurement := &models.Measurement{
-		IspindelID:  ispindelID,
-		Timestamp:   time.Now(),
+		IspindelID: ispindelID,
+		Timestamp:  time.Now(),
 	}
 
 	// Mapowanie pól z danych JSON na strukturę Measurement
 	if name, ok := data["name"].(string); ok {
 		measurement.Name = name
 	}
-	
+
 	var deviceIDStr string
 	if deviceID, ok := data["ID"].(float64); ok {
 		measurement.DeviceID = uint(deviceID)
 		deviceIDStr = fmt.Sprintf("%.0f", deviceID)
 	}
-	
+
 	if angle, ok := data["angle"].(float64); ok {
 		measurement.Angle = angle
 	}
@@ -237,7 +237,7 @@ func (s *IspindelService) SaveMeasurement(ispindelID uint, data map[string]inter
 	updates := map[string]interface{}{
 		"last_seen": time.Now(),
 	}
-	
+
 	// Dodaj DeviceID do aktualizacji jeśli jest dostępne
 	if deviceIDStr != "" {
 		updates["device_id"] = deviceIDStr
@@ -252,7 +252,7 @@ func (s *IspindelService) SaveMeasurement(ispindelID uint, data map[string]inter
 			updates["name"] = name
 		}
 	}
-	
+
 	if err := database.DB.Model(&models.Ispindel{}).Where("id = ?", ispindelID).Updates(updates).Error; err != nil {
 		log.Printf("Błąd podczas aktualizacji informacji o urządzeniu: %v", err)
 	}
@@ -263,7 +263,7 @@ func (s *IspindelService) SaveMeasurement(ispindelID uint, data map[string]inter
 // GetLatestMeasurements pobiera najnowsze pomiary dla danego urządzenia
 func (s *IspindelService) GetLatestMeasurements(ispindelID uint, limit int) ([]models.Measurement, error) {
 	var measurements []models.Measurement
-	
+
 	if limit <= 0 {
 		limit = 10 // Domyślny limit
 	}
@@ -286,7 +286,7 @@ func (s *IspindelService) GetMeasurementsForIspindelInRange(ispindelID uint, sta
 		limit = 100 // Domyślny limit
 	}
 
-	if err := database.DB.Where("ispindel_id = ? AND timestamp BETWEEN ? AND ?", 
+	if err := database.DB.Where("ispindel_id = ? AND timestamp BETWEEN ? AND ?",
 		ispindelID, startTime, endTime).
 		Order("timestamp DESC").
 		Limit(limit).
@@ -324,4 +324,4 @@ func (s *IspindelService) checkAndUpdateDeviceActivity(ispindelID uint) error {
 	}
 
 	return nil
-} 
+}

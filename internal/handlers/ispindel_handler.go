@@ -42,7 +42,7 @@ func (h *IspindelHandler) ListIspindels(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "ispindels.html", gin.H{
-		"user":     userModel,
+		"user":      userModel,
 		"ispindels": ispindels,
 	})
 }
@@ -365,7 +365,7 @@ func (h *IspindelHandler) ReceiveData(c *gin.Context) {
 	}
 
 	// Loguj informację o otrzymanym żądaniu
-	log.Printf("Odebrano dane dla urządzenia: %s (ID: %d) od adresu IP: %s", 
+	log.Printf("Odebrano dane dla urządzenia: %s (ID: %d) od adresu IP: %s",
 		ispindel.Name, ispindel.ID, c.ClientIP())
 
 	// Wyświetl otrzymane dane w logach
@@ -380,9 +380,9 @@ func (h *IspindelHandler) ReceiveData(c *gin.Context) {
 		return
 	}
 
-	log.Printf("Pomyślnie zapisano pomiar dla urządzenia: %s, temp: %.2f°, gęstość: %.4f", 
+	log.Printf("Pomyślnie zapisano pomiar dla urządzenia: %s, temp: %.2f°, gęstość: %.4f",
 		ispindel.Name, measurement.Temperature, measurement.Gravity)
-		
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":     true,
 		"message":     "Pomyślnie zapisano dane",
@@ -446,7 +446,7 @@ func (h *IspindelHandler) ReceiveDataNoAPIKey(c *gin.Context) {
 	}
 
 	// Loguj informację o otrzymanym żądaniu
-	log.Printf("Odebrano dane bez klucza API w URL dla urządzenia: %s (ID: %d) od adresu IP: %s", 
+	log.Printf("Odebrano dane bez klucza API w URL dla urządzenia: %s (ID: %d) od adresu IP: %s",
 		ispindel.Name, ispindel.ID, c.ClientIP())
 
 	// Jeśli wcześniej nie udało się odczytać danych JSON, spróbuj ponownie
@@ -465,12 +465,12 @@ func (h *IspindelHandler) ReceiveDataNoAPIKey(c *gin.Context) {
 		if strings.Contains(err.Error(), "za częste pomiary") {
 			log.Printf("Odrzucono pomiar od urządzenia %s (ID: %d) - zbyt częste pomiary", ispindel.Name, ispindel.ID)
 			c.JSON(http.StatusTooManyRequests, gin.H{
-				"error": "Za częste pomiary",
+				"error":   "Za częste pomiary",
 				"message": "Minimalny odstęp między pomiarami to 900 sekund (15 minut)",
 			})
 			return
 		}
-		
+
 		log.Printf("Błąd podczas zapisywania pomiaru dla urządzenia %s (ID: %d): %v", ispindel.Name, ispindel.ID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Nie udało się zapisać pomiaru"})
 		return
@@ -478,11 +478,11 @@ func (h *IspindelHandler) ReceiveDataNoAPIKey(c *gin.Context) {
 
 	log.Printf("Pomyślnie zapisano pomiar dla urządzenia bez klucza API w URL: %s, temp: %.2f°, gęstość: %.4f",
 		ispindel.Name, measurement.Temperature, measurement.Gravity)
-		
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":     true,
 		"message":     "Pomyślnie zapisano dane",
 		"measurement": measurement,
 		"time":        time.Now(),
 	})
-} 
+}

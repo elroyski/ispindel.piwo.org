@@ -2,15 +2,15 @@ package services
 
 import (
 	"errors"
-	"time"
 	"log"
+	"time"
 
-	"ispindel.piwo.org/pkg/database"
+	"gorm.io/gorm"
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/pkg/auth"
+	"ispindel.piwo.org/pkg/database"
 	"ispindel.piwo.org/pkg/mailer"
 	"ispindel.piwo.org/pkg/utils"
-	"gorm.io/gorm"
 )
 
 type UserService struct {
@@ -176,4 +176,4 @@ func (s *UserService) GetUserByID(userID uint) (*models.User, error) {
 		return nil, err
 	}
 	return &user, nil
-} 
+}

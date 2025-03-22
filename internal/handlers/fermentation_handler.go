@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"ispindel.piwo.org/internal/models"
@@ -49,7 +48,7 @@ func (h *FermentationHandler) GetBeerStyles() ([]map[string]string, error) {
 
 	// Jeśli plik nie został znaleziony, zwróć przyjazny komunikat błędu
 	if err != nil {
-		return nil, fmt.Errorf("nie można znaleźć pliku ze stylami piwa. Spróbuj wykonać: "+
+		return nil, fmt.Errorf("nie można znaleźć pliku ze stylami piwa. Spróbuj wykonać: " +
 			"wget -O static/data/beer_styles.json https://raw.githubusercontent.com/beerjson/bjcp-json/main/styles/bjcp_styleguide-2021.json")
 	}
 
@@ -61,7 +60,7 @@ func (h *FermentationHandler) GetBeerStyles() ([]map[string]string, error) {
 
 	// Pobieranie stylów piwa
 	var styles []map[string]string
-	
+
 	// Dodaj pierwszy element jako "styl własny"
 	styles = append(styles, map[string]string{
 		"name":     "Styl własny",
@@ -74,12 +73,12 @@ func (h *FermentationHandler) GetBeerStyles() ([]map[string]string, error) {
 	if !ok {
 		return nil, fmt.Errorf("nieprawidłowa struktura pliku JSON - brak klucza beerjson")
 	}
-	
+
 	stylesArray, ok := beerJson["styles"].([]interface{})
 	if !ok {
 		return nil, fmt.Errorf("nieprawidłowa struktura pliku JSON - brak stylesArray w beerjson")
 	}
-	
+
 	for _, style := range stylesArray {
 		if styleMap, ok := style.(map[string]interface{}); ok {
 			// Pobierz tylko potrzebne pola
@@ -96,14 +95,10 @@ func (h *FermentationHandler) GetBeerStyles() ([]map[string]string, error) {
 						cleanName = name[len(prefix):]
 					}
 				}
-				
-				// Tworzymy nazwę w formacie [Kategoria] Nazwa [style_id]
+
+				// Tworzymy nazwę w prostym formacie [Kategoria] Nazwa [style_id]
 				formattedName := fmt.Sprintf("[%s] %s [%s]", category, cleanName, styleID)
-				
-				// Usuń zduplikowane nawiasy kwadratowe
-				formattedName = strings.ReplaceAll(formattedName, "[[", "[")
-				formattedName = strings.ReplaceAll(formattedName, "]]", "]")
-				
+
 				styles = append(styles, map[string]string{
 					"name":     formattedName,
 					"category": category,
@@ -119,7 +114,7 @@ func (h *FermentationHandler) GetBeerStyles() ([]map[string]string, error) {
 // FermentationWithDuration reprezentuje fermentację wraz z czasem trwania
 type FermentationWithDuration struct {
 	*models.Fermentation
-	Duration string
+	Duration        string
 	LastMeasurement *models.Measurement
 }
 
@@ -147,7 +142,7 @@ func (h *FermentationHandler) FermentationsList(c *gin.Context) {
 	var fermentationsWithDuration []FermentationWithDuration
 	for _, f := range fermentations {
 		fermentation := f // Utwórz kopię, aby uniknąć problemów z wskaźnikami w pętli
-		
+
 		// Pobierz ostatni pomiar dla tej fermentacji
 		measurements, err := h.FermentationService.GetAllMeasurements(fermentation.ID)
 		var lastMeasurement *models.Measurement
@@ -156,14 +151,14 @@ func (h *FermentationHandler) FermentationsList(c *gin.Context) {
 		}
 
 		fermentationsWithDuration = append(fermentationsWithDuration, FermentationWithDuration{
-			Fermentation: &fermentation,
-			Duration:    h.FermentationService.GetFermentationDurationString(&fermentation),
+			Fermentation:    &fermentation,
+			Duration:        h.FermentationService.GetFermentationDurationString(&fermentation),
 			LastMeasurement: lastMeasurement,
 		})
 	}
 
 	c.HTML(http.StatusOK, "fermentations.html", gin.H{
-		"user":         userModel,
+		"user":          userModel,
 		"fermentations": fermentationsWithDuration,
 	})
 }
@@ -222,12 +217,12 @@ func (h *FermentationHandler) NewFermentationForm(c *gin.Context) {
 
 	// Renderuj formularz nowej fermentacji
 	c.HTML(http.StatusOK, "fermentation_form.html", gin.H{
-		"user":           userModel,
+		"user":            userModel,
 		"activeIspindels": activeIspindels,
-		"usedIspindels":  usedIspindels,
-		"beerStyles":     beerStyles,
-		"formTitle":      "Nowa fermentacja",
-		"submitButton":   "Rozpocznij fermentację",
+		"usedIspindels":   usedIspindels,
+		"beerStyles":      beerStyles,
+		"formTitle":       "Nowa fermentacja",
+		"submitButton":    "Rozpocznij fermentację",
 	})
 }
 
@@ -255,16 +250,16 @@ func (h *FermentationHandler) CreateFermentation(c *gin.Context) {
 		beerStyles, _ := h.GetBeerStyles()
 
 		c.HTML(http.StatusBadRequest, "fermentation_form.html", gin.H{
-			"user":          userModel,
+			"user":            userModel,
 			"activeIspindels": activeIspindels,
-			"beerStyles":    beerStyles,
-			"formTitle":     "Nowa fermentacja",
-			"submitButton":  "Rozpocznij fermentację",
-			"error":         "Nazwa warki jest wymagana",
-			"name":          name,
-			"style_id":      styleID,
-			"description":   description,
-			"ispindel_id":   ispindelIDStr,
+			"beerStyles":      beerStyles,
+			"formTitle":       "Nowa fermentacja",
+			"submitButton":    "Rozpocznij fermentację",
+			"error":           "Nazwa warki jest wymagana",
+			"name":            name,
+			"style_id":        styleID,
+			"description":     description,
+			"ispindel_id":     ispindelIDStr,
 		})
 		return
 	}
@@ -277,15 +272,15 @@ func (h *FermentationHandler) CreateFermentation(c *gin.Context) {
 		beerStyles, _ := h.GetBeerStyles()
 
 		c.HTML(http.StatusBadRequest, "fermentation_form.html", gin.H{
-			"user":          userModel,
+			"user":            userModel,
 			"activeIspindels": activeIspindels,
-			"beerStyles":    beerStyles,
-			"formTitle":     "Nowa fermentacja",
-			"submitButton":  "Rozpocznij fermentację",
-			"error":         "Wybór urządzenia iSpindel jest wymagany",
-			"name":          name,
-			"style_id":      styleID,
-			"description":   description,
+			"beerStyles":      beerStyles,
+			"formTitle":       "Nowa fermentacja",
+			"submitButton":    "Rozpocznij fermentację",
+			"error":           "Wybór urządzenia iSpindel jest wymagany",
+			"name":            name,
+			"style_id":        styleID,
+			"description":     description,
 		})
 		return
 	}
@@ -317,22 +312,22 @@ func (h *FermentationHandler) CreateFermentation(c *gin.Context) {
 		activeIspindels, _ := h.FermentationService.GetActiveIspindelsForUser(userModel.ID)
 
 		c.HTML(http.StatusInternalServerError, "fermentation_form.html", gin.H{
-			"user":          userModel,
+			"user":            userModel,
 			"activeIspindels": activeIspindels,
-			"beerStyles":    beerStyles,
-			"formTitle":     "Nowa fermentacja",
-			"submitButton":  "Rozpocznij fermentację",
-			"error":         "Błąd podczas tworzenia fermentacji: " + err.Error(),
-			"name":          name,
-			"style_id":      styleID,
-			"description":   description,
-			"ispindel_id":   ispindelIDStr,
+			"beerStyles":      beerStyles,
+			"formTitle":       "Nowa fermentacja",
+			"submitButton":    "Rozpocznij fermentację",
+			"error":           "Błąd podczas tworzenia fermentacji: " + err.Error(),
+			"name":            name,
+			"style_id":        styleID,
+			"description":     description,
+			"ispindel_id":     ispindelIDStr,
 		})
 		return
 	}
 
 	// Przekieruj na stronę szczegółów nowej fermentacji
-	c.Redirect(http.StatusSeeOther, "/fermentations/" + strconv.Itoa(int(fermentation.ID)))
+	c.Redirect(http.StatusSeeOther, "/fermentations/"+strconv.Itoa(int(fermentation.ID)))
 }
 
 // FermentationDetails wyświetla szczegóły fermentacji
@@ -395,7 +390,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 	var rssi []int
 
 	for _, m := range measurementsLast12h {
-		timestamps = append(timestamps, m.Timestamp.Format("15:04"))  // Format godzinowy dla małych wykresów
+		timestamps = append(timestamps, m.Timestamp.Format("15:04")) // Format godzinowy dla małych wykresów
 		temperatures = append(temperatures, m.Temperature)
 		gravities = append(gravities, m.Gravity)
 		batteries = append(batteries, m.Battery)
@@ -415,7 +410,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		"gravities":    gravities,
 		"batteries":    batteries,
 		"angles":       angles,
-		"rssi":        rssi,
+		"rssi":         rssi,
 	})
 }
 
@@ -453,7 +448,7 @@ func (h *FermentationHandler) EndFermentation(c *gin.Context) {
 	}
 
 	// Przekieruj z powrotem do szczegółów fermentacji
-	c.Redirect(http.StatusSeeOther, "/fermentations/" + fermentationIDStr)
+	c.Redirect(http.StatusSeeOther, "/fermentations/"+fermentationIDStr)
 }
 
 // DeleteFermentation usuwa zakończoną fermentację
@@ -552,6 +547,6 @@ func (h *FermentationHandler) ShowCharts(c *gin.Context) {
 		"gravities":    gravities,
 		"batteries":    batteries,
 		"angles":       angles,
-		"rssi":        rssi,
+		"rssi":         rssi,
 	})
-} 
+}

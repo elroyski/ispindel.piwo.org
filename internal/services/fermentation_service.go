@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"gorm.io/gorm"
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/pkg/database"
-	"gorm.io/gorm"
 )
 
 type FermentationService struct{}
@@ -108,12 +108,12 @@ func (s *FermentationService) GetActiveIspindelsForUser(userID uint) ([]models.I
 	if err := database.DB.Where("user_id = ? AND is_active = ?", userID, true).Find(&ispindels).Error; err != nil {
 		return nil, err
 	}
-	
+
 	// Jeśli nie znaleziono urządzeń, zwróć pustą listę
 	if len(ispindels) == 0 {
 		return ispindels, nil
 	}
-	
+
 	// Pobierz ID urządzeń używanych w aktywnych fermentacjach
 	var usedIspindelIDs []uint
 	if err := database.DB.Model(&models.Fermentation{}).
@@ -121,12 +121,12 @@ func (s *FermentationService) GetActiveIspindelsForUser(userID uint) ([]models.I
 		Pluck("ispindel_id", &usedIspindelIDs).Error; err != nil {
 		return nil, err
 	}
-	
+
 	// Jeśli nie ma aktywnych fermentacji, zwróć wszystkie aktywne urządzenia
 	if len(usedIspindelIDs) == 0 {
 		return ispindels, nil
 	}
-	
+
 	// Filtruj urządzenia, które są już używane
 	var availableIspindels []models.Ispindel
 	for _, ispindel := range ispindels {
@@ -141,7 +141,7 @@ func (s *FermentationService) GetActiveIspindelsForUser(userID uint) ([]models.I
 			availableIspindels = append(availableIspindels, ispindel)
 		}
 	}
-	
+
 	return availableIspindels, nil
 }
 
@@ -152,12 +152,12 @@ func (s *FermentationService) DeleteFermentation(fermentationID, userID uint) er
 	if err != nil {
 		return err
 	}
-	
+
 	// Sprawdź, czy fermentacja jest już zakończona
 	if fermentation.IsActive {
 		return errors.New("nie można usunąć aktywnej fermentacji - najpierw ją zakończ")
 	}
-	
+
 	// Usuń fermentację
 	return database.DB.Delete(&models.Fermentation{}, fermentationID).Error
 }
@@ -283,7 +283,7 @@ func (s *FermentationService) GetFermentationDuration(fermentation *models.Ferme
 	}
 
 	duration := endTime.Sub(fermentation.StartedAt)
-	
+
 	totalHours := int(duration.Hours())
 	days := totalHours / 24
 	hours := totalHours % 24
@@ -299,20 +299,20 @@ func (s *FermentationService) GetFermentationDuration(fermentation *models.Ferme
 // GetFermentationDurationString zwraca sformatowany string z czasem trwania fermentacji
 func (s *FermentationService) GetFermentationDurationString(fermentation *models.Fermentation) string {
 	duration := s.GetFermentationDuration(fermentation)
-	
+
 	if duration.Days > 0 {
 		if duration.Hours > 0 {
 			return fmt.Sprintf("%d dni %d godz", duration.Days, duration.Hours)
 		}
 		return fmt.Sprintf("%d dni", duration.Days)
 	}
-	
+
 	if duration.Hours > 0 {
 		if duration.Minutes > 0 {
 			return fmt.Sprintf("%d godz %d min", duration.Hours, duration.Minutes)
 		}
 		return fmt.Sprintf("%d godz", duration.Hours)
 	}
-	
+
 	return fmt.Sprintf("%d min", duration.Minutes)
-} 
+}
