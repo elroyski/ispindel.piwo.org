@@ -370,6 +370,16 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		return
 	}
 
+	// Pobierz szczegółowe informacje o urządzeniu
+	ispindel, err := h.IspindelService.GetIspindelByID(fermentation.IspindelID, userModel.ID)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
+			"error": "Błąd podczas pobierania informacji o urządzeniu",
+			"user":  userModel,
+		})
+		return
+	}
+
 	// Pobierz pomiary z ostatnich 12 godzin dla wykresów (co godzinę)
 	measurementsLast12h, err := h.FermentationService.GetHourlyMeasurementsLast12Hours(uint(fermentationID))
 	if err != nil {
@@ -411,6 +421,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 	c.HTML(http.StatusOK, "fermentation_details.html", gin.H{
 		"user":         userModel,
 		"fermentation": fermentation,
+		"ispindel":     ispindel, // Dodane: pełne informacje o urządzeniu
 		"duration":     h.FermentationService.GetFermentationDurationString(fermentation),
 		"hasData":      len(measurementsLast12h) > 0,
 		"measurements": allMeasurements[:min(len(allMeasurements), 15)], // Pokaż tylko ostatnie 15 pomiarów w tabeli
