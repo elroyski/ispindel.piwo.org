@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"gorm.io/gorm"
@@ -315,4 +316,20 @@ func (s *FermentationService) GetFermentationDurationString(fermentation *models
 	}
 
 	return fmt.Sprintf("%d min", duration.Minutes)
+}
+
+// GetAllMeasurementsChronological pobiera wszystkie pomiary dla fermentacji w kolejności chronologicznej
+func (s *FermentationService) GetAllMeasurementsChronological(fermentationID uint) ([]models.Measurement, error) {
+	var measurements []models.Measurement
+	if err := database.DB.Where("fermentation_id = ?", fermentationID).Order("timestamp ASC").Find(&measurements).Error; err != nil {
+		return nil, err
+	}
+	return measurements, nil
+}
+
+// SortMeasurementsChronologically sortuje pomiary chronologicznie (od najstarszych do najnowszych)
+func SortMeasurementsChronologically(measurements []models.Measurement) {
+	sort.Slice(measurements, func(i, j int) bool {
+		return measurements[i].Timestamp.Before(measurements[j].Timestamp)
+	})
 }

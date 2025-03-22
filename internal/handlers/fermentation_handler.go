@@ -390,6 +390,9 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		return
 	}
 
+	// Sortuj pomiary chronologicznie (od najstarszych do najnowszych)
+	services.SortMeasurementsChronologically(measurementsLast12h)
+
 	// Pobierz wszystkie pomiary dla tabeli (tylko ostatnie 15)
 	allMeasurements, err := h.FermentationService.GetAllMeasurements(uint(fermentationID))
 	if err != nil {
@@ -399,6 +402,9 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		})
 		return
 	}
+
+	// Sortuj pomiary chronologicznie (od najstarszych do najnowszych)
+	services.SortMeasurementsChronologically(allMeasurements)
 
 	// Przygotuj dane do wykresów (ostatnie 12h, co godzinę)
 	var timestamps []string
@@ -530,7 +536,7 @@ func (h *FermentationHandler) ShowCharts(c *gin.Context) {
 		return
 	}
 
-	// Pobierz wszystkie pomiary dla tej fermentacji
+	// Pobierz wszystkie pomiary
 	measurements, err := h.FermentationService.GetAllMeasurements(uint(fermentationID))
 	if err != nil {
 		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
@@ -539,6 +545,9 @@ func (h *FermentationHandler) ShowCharts(c *gin.Context) {
 		})
 		return
 	}
+
+	// Sortuj pomiary chronologicznie (od najstarszych do najnowszych)
+	services.SortMeasurementsChronologically(measurements)
 
 	// Przygotuj dane do wykresów
 	var timestamps []string
