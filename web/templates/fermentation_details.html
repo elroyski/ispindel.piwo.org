@@ -64,8 +64,8 @@
                     </div>
                     
                     <div>
-                        <p class="text-gray-600 text-sm">Urządzenie iSpindel</p>
-                        <p class="font-medium">{{.fermentation.Ispindel.Name}}</p>
+                        <p class="text-gray-600 text-sm">Urządzenie</p>
+                        <p class="font-medium">{{.fermentation.Ispindel.Name}}{{if .fermentation.Ispindel.Description}} ({{.fermentation.Ispindel.Description}}){{end}}</p>
                     </div>
                     
                     {{if and .fermentation.Description (ne .fermentation.Description "")}}
