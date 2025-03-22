@@ -87,8 +87,10 @@ func (h *FermentationHandler) GetBeerStyles() ([]map[string]string, error) {
 			styleID, styleIDOk := styleMap["style_id"].(string)
 
 			if nameOk && categoryOk && styleIDOk {
+				// Tworzymy nazwę w formacie [Kategoria] Nazwa [style_id]
+				formattedName := fmt.Sprintf("[%s] %s [%s]", category, name, styleID)
 				styles = append(styles, map[string]string{
-					"name":     name,
+					"name":     formattedName,
 					"category": category,
 					"style_id": styleID,
 				})
