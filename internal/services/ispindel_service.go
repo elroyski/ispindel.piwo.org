@@ -205,8 +205,8 @@ func (s *IspindelService) SaveMeasurement(ispindelID uint, data map[string]inter
 
 	var deviceIDStr string
 	if deviceID, ok := data["ID"].(float64); ok {
-		measurement.DeviceID = uint(deviceID)
 		deviceIDStr = fmt.Sprintf("%.0f", deviceID)
+		measurement.DeviceID = deviceIDStr
 	}
 
 	if angle, ok := data["angle"].(float64); ok {
