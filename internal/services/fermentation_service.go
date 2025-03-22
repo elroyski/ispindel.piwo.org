@@ -199,6 +199,31 @@ func (s *FermentationService) GetAllMeasurements(fermentationID uint) ([]models.
 	return measurements, nil
 }
 
+// GetMeasurementsLast12Hours pobiera pomiary z ostatnich 12 godzin dla danej fermentacji
+func (s *FermentationService) GetMeasurementsLast12Hours(fermentationID uint) ([]models.Measurement, error) {
+	// Najpierw pobierz fermentację, aby uzyskać ispindel_id i zakres dat
+	var fermentation models.Fermentation
+	if err := database.DB.First(&fermentation, fermentationID).Error; err != nil {
+		return nil, err
+	}
+
+	// Przygotuj zapytanie bazowe
+	query := database.DB.Where("ispindel_id = ?", fermentation.IspindelID)
+
+	// Dodaj warunek na zakres dat - ostatnie 12 godzin
+	twelveHoursAgo := time.Now().Add(-12 * time.Hour)
+	query = query.Where("timestamp >= ?", twelveHoursAgo)
+
+	// Pobierz pomiary
+	var measurements []models.Measurement
+	err := query.Order("timestamp ASC").Find(&measurements).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return measurements, nil
+}
+
 // FermentationDuration reprezentuje czas trwania fermentacji
 type FermentationDuration struct {
 	Days    int

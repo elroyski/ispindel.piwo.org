@@ -349,8 +349,8 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		return
 	}
 
-	// Pobierz pomiary
-	measurements, err := h.FermentationService.GetAllMeasurements(uint(fermentationID))
+	// Pobierz pomiary z ostatnich 12 godzin dla wykresów
+	measurementsLast12h, err := h.FermentationService.GetMeasurementsLast12Hours(uint(fermentationID))
 	if err != nil {
 		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
 			"error": "Błąd podczas pobierania pomiarów",
@@ -359,7 +359,17 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		return
 	}
 
-	// Przygotuj dane do wykresów
+	// Pobierz wszystkie pomiary dla tabeli (tylko ostatnie 15)
+	allMeasurements, err := h.FermentationService.GetAllMeasurements(uint(fermentationID))
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
+			"error": "Błąd podczas pobierania pomiarów",
+			"user":  userModel,
+		})
+		return
+	}
+
+	// Przygotuj dane do wykresów (ostatnie 12h)
 	var timestamps []string
 	var temperatures []float64
 	var gravities []float64
@@ -367,8 +377,8 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 	var angles []float64
 	var rssi []int
 
-	for _, m := range measurements {
-		timestamps = append(timestamps, m.Timestamp.Format("02.01.2006 15:04"))
+	for _, m := range measurementsLast12h {
+		timestamps = append(timestamps, m.Timestamp.Format("15:04"))  // Format godzinowy dla małych wykresów
 		temperatures = append(temperatures, m.Temperature)
 		gravities = append(gravities, m.Gravity)
 		batteries = append(batteries, m.Battery)
@@ -381,8 +391,8 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		"user":         userModel,
 		"fermentation": fermentation,
 		"duration":     h.FermentationService.GetFermentationDurationString(fermentation),
-		"hasData":      len(measurements) > 0,
-		"measurements": measurements[:min(len(measurements), 15)], // Pokaż tylko ostatnie 15 pomiarów
+		"hasData":      len(measurementsLast12h) > 0,
+		"measurements": allMeasurements[:min(len(allMeasurements), 15)], // Pokaż tylko ostatnie 15 pomiarów w tabeli
 		"timestamps":   timestamps,
 		"temperatures": temperatures,
 		"gravities":    gravities,
