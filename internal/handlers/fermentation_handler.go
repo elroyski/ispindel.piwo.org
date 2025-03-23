@@ -148,7 +148,9 @@ func (h *FermentationHandler) FermentationsList(c *gin.Context) {
 		measurements, err := h.FermentationService.GetAllMeasurements(fermentation.ID)
 		var lastMeasurement *models.Measurement
 		if err == nil && len(measurements) > 0 {
-			lastMeasurement = &measurements[len(measurements)-1]
+			// GetAllMeasurements zwraca pomiary posortowane malejąco po timestamp (od najnowszych)
+			// więc pierwszy element (index 0) to najnowszy pomiar
+			lastMeasurement = &measurements[0]
 		}
 
 		// Pobierz urządzenie powiązane z fermentacją
