@@ -333,3 +333,38 @@ func SortMeasurementsChronologically(measurements []models.Measurement) {
 		return measurements[i].Timestamp.Before(measurements[j].Timestamp)
 	})
 }
+
+// GetInitialMeasurements pobiera średnie wartości z pierwszych 3 pomiarów fermentacji
+func (s *FermentationService) GetInitialMeasurements(fermentationID uint) (float64, float64, error) {
+	// Najpierw pobierz fermentację, aby uzyskać ispindel_id i datę rozpoczęcia
+	var fermentation models.Fermentation
+	if err := database.DB.First(&fermentation, fermentationID).Error; err != nil {
+		return 0, 0, err
+	}
+
+	// Pobierz pierwsze 3 pomiary posortowane rosnąco po timestamp
+	var measurements []models.Measurement
+	err := database.DB.Where("ispindel_id = ? AND timestamp >= ?", fermentation.IspindelID, fermentation.StartedAt).
+		Order("timestamp ASC").
+		Limit(3).
+		Find(&measurements).Error
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if len(measurements) == 0 {
+		return 0, 0, errors.New("brak pomiarów")
+	}
+
+	// Oblicz średnie wartości
+	var sumGravity, sumTemperature float64
+	for _, m := range measurements {
+		sumGravity += m.Gravity
+		sumTemperature += m.Temperature
+	}
+
+	avgGravity := sumGravity / float64(len(measurements))
+	avgTemperature := sumTemperature / float64(len(measurements))
+
+	return avgGravity, avgTemperature, nil
+}

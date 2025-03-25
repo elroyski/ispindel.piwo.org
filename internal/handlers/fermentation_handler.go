@@ -405,8 +405,25 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		return
 	}
 
-	// Nie sortujemy pomiarów dla tabeli - zachowujemy kolejność malejącą (od najnowszych)
-	// aby najnowsze pomiary były widoczne na górze tabeli
+	// Pobierz startowe wartości (średnia z pierwszych 3 pomiarów)
+	initialGravity, initialTemperature, err := h.FermentationService.GetInitialMeasurements(uint(fermentationID))
+	var initialValues gin.H
+	if err == nil {
+		initialValues = gin.H{
+			"gravity":     initialGravity,
+			"temperature": initialTemperature,
+		}
+	}
+
+	// Pobierz aktualne wartości (z ostatniego pomiaru)
+	var currentValues gin.H
+	if len(allMeasurements) > 0 {
+		lastMeasurement := allMeasurements[0] // allMeasurements jest już posortowane malejąco
+		currentValues = gin.H{
+			"gravity":     lastMeasurement.Gravity,
+			"temperature": lastMeasurement.Temperature,
+		}
+	}
 
 	// Przygotuj dane do wykresów (ostatnie 12h, co godzinę)
 	var timestamps []string
@@ -427,18 +444,20 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 
 	// Przygotuj dane do szablonu
 	c.HTML(http.StatusOK, "fermentation_details.html", gin.H{
-		"user":         userModel,
-		"fermentation": fermentation,
-		"ispindel":     ispindel, // Dodane: pełne informacje o urządzeniu
-		"duration":     h.FermentationService.GetFermentationDurationString(fermentation),
-		"hasData":      len(measurementsLast12h) > 0,
-		"measurements": allMeasurements[:min(len(allMeasurements), 15)], // Pokaż tylko ostatnie 15 pomiarów w tabeli
-		"timestamps":   timestamps,
-		"temperatures": temperatures,
-		"gravities":    gravities,
-		"batteries":    batteries,
-		"angles":       angles,
-		"rssi":         rssi,
+		"user":          userModel,
+		"fermentation":  fermentation,
+		"ispindel":      ispindel, // Dodane: pełne informacje o urządzeniu
+		"duration":      h.FermentationService.GetFermentationDurationString(fermentation),
+		"hasData":       len(measurementsLast12h) > 0,
+		"measurements":  allMeasurements[:min(len(allMeasurements), 15)], // Pokaż tylko ostatnie 15 pomiarów w tabeli
+		"timestamps":    timestamps,
+		"temperatures":  temperatures,
+		"gravities":     gravities,
+		"batteries":     batteries,
+		"angles":        angles,
+		"rssi":          rssi,
+		"initialValues": initialValues,
+		"currentValues": currentValues,
 	})
 }
 

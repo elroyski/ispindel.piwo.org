@@ -67,6 +67,20 @@
                         <p class="text-gray-600 text-sm">Czas trwania</p>
                         <p class="font-medium">{{.duration}}</p>
                     </div>
+
+                    {{if .initialValues}}
+                    <div>
+                        <p class="text-gray-600 text-sm">Startowe BLG/temperatura</p>
+                        <p class="font-medium">{{printf "%.3f" .initialValues.gravity}} Blg / {{printf "%.1f" .initialValues.temperature}}°C</p>
+                    </div>
+                    {{end}}
+
+                    {{if .currentValues}}
+                    <div>
+                        <p class="text-gray-600 text-sm">Aktualne BLG/temperatura</p>
+                        <p class="font-medium">{{printf "%.3f" .currentValues.gravity}} Blg / {{printf "%.1f" .currentValues.temperature}}°C</p>
+                    </div>
+                    {{end}}
                     
                     <div>
                         <p class="text-gray-600 text-sm">Urządzenie</p>
