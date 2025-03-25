@@ -33,14 +33,24 @@ func generateAPIKey() (string, error) {
 
 // CreateIspindel tworzy nowe urządzenie iSpindel dla użytkownika
 func (s *IspindelService) CreateIspindel(userID uint, name, description string) (*models.Ispindel, error) {
-	// Sprawdź czy użytkownik ma już 4 urządzenia
+	// Pobierz maksymalną liczbę urządzeń ze zmiennej środowiskowej
+	maxDevices := 4 // domyślna wartość
+	if envMaxDevices := os.Getenv("ISPINDEL_MAX_DEVICES"); envMaxDevices != "" {
+		if max, err := strconv.Atoi(envMaxDevices); err == nil {
+			maxDevices = max
+		} else {
+			log.Printf("Błąd podczas parsowania ISPINDEL_MAX_DEVICES: %v, używam wartości domyślnej 4", err)
+		}
+	}
+
+	// Sprawdź czy użytkownik ma już maksymalną liczbę urządzeń
 	var count int64
 	if err := database.DB.Model(&models.Ispindel{}).Where("user_id = ?", userID).Count(&count).Error; err != nil {
 		return nil, err
 	}
 
-	if count >= 4 {
-		return nil, errors.New("osiągnięto maksymalną liczbę urządzeń (4)")
+	if count >= int64(maxDevices) {
+		return nil, fmt.Errorf("osiągnięto maksymalną liczbę urządzeń (%d)", maxDevices)
 	}
 
 	// Generuj unikalny klucz API
