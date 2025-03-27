@@ -84,7 +84,13 @@
                     
                     <div>
                         <p class="text-gray-600 text-sm">Urządzenie</p>
-                        <p class="font-medium">{{if ne .ispindel.DeviceID ""}}ID: {{.ispindel.DeviceID}} / {{end}}{{.ispindel.Name}}{{if .ispindel.Description}} ({{.ispindel.Description}}){{end}}</p>
+                        <p class="font-medium">
+                            {{if .ispindel}}
+                                {{if ne .ispindel.DeviceID ""}}ID: {{.ispindel.DeviceID}} / {{end}}{{.ispindel.Name}}{{if .ispindel.Description}} ({{.ispindel.Description}}){{end}}
+                            {{else}}
+                                <span class="text-gray-500">Urządzenie zostało usunięte</span>
+                            {{end}}
+                        </p>
                     </div>
                     
                     {{if and .fermentation.Description (ne .fermentation.Description "")}}
@@ -96,13 +102,26 @@
                 </div>
                 
                 {{if .fermentation.IsActive}}
-                <div class="mt-6 pt-4 border-t">
-                    <form action="/fermentations/{{.fermentation.ID}}/end" method="POST" onsubmit="return confirm('Czy na pewno chcesz zakończyć tę fermentację?');">
-                        <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded">
-                            Zakończ fermentację
-                        </button>
-                    </form>
-                </div>
+                    {{if .hasData}}
+                    <div class="mt-6 pt-4 border-t">
+                        <form action="/fermentations/{{.fermentation.ID}}/end" method="POST" onsubmit="return confirm('Czy na pewno chcesz zakończyć tę fermentację?');">
+                            <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded">
+                                Zakończ fermentację
+                            </button>
+                        </form>
+                    </div>
+                    {{else}}
+                    <div class="mt-6 pt-4 border-t">
+                        <div class="mb-4 text-center text-sm text-gray-500">
+                            Fermentacja nie ma jeszcze danych pomiarowych
+                        </div>
+                        <form action="/fermentations/{{.fermentation.ID}}/delete" method="POST" onsubmit="return confirm('Czy na pewno chcesz usunąć tę fermentację? Ta operacja jest nieodwracalna.');">
+                            <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded">
+                                Usuń fermentację
+                            </button>
+                        </form>
+                    </div>
+                    {{end}}
                 {{else}}
                 <div class="mt-6 pt-4 border-t">
                     <form action="/fermentations/{{.fermentation.ID}}/delete" method="POST" onsubmit="return confirm('Czy na pewno chcesz usunąć tę fermentację? Ta operacja jest nieodwracalna.');">

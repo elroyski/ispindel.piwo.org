@@ -468,6 +468,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		"rssi":          rssi,
 		"initialValues": initialValues,
 		"currentValues": currentValues,
+		"canDelete":     !fermentation.IsActive || len(allMeasurements) == 0, // Można usunąć jeśli zakończona lub bez pomiarów
 	})
 }
 

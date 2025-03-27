@@ -168,9 +168,18 @@ func (s *FermentationService) DeleteFermentation(fermentationID, userID uint) er
 		return err
 	}
 
-	// Sprawdź, czy fermentacja jest już zakończona
+	// Sprawdź, czy fermentacja jest już zakończona lub nie ma pomiarów
 	if fermentation.IsActive {
-		return errors.New("nie można usunąć aktywnej fermentacji - najpierw ją zakończ")
+		// Pobierz pomiary, aby sprawdzić, czy fermentacja ma jakieś dane
+		measurements, err := s.GetAllMeasurements(fermentationID)
+		if err != nil {
+			return err
+		}
+
+		// Jeśli fermentacja ma pomiary, nie można jej usunąć bez zakończenia
+		if len(measurements) > 0 {
+			return errors.New("nie można usunąć aktywnej fermentacji z pomiarami - najpierw ją zakończ")
+		}
 	}
 
 	// Usuń fermentację
