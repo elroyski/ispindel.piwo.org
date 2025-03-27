@@ -73,6 +73,7 @@ func main() {
 	authHandler := handlers.NewAuthHandler()
 	ispindelHandler := handlers.NewIspindelHandler()
 	fermentationHandler := handlers.NewFermentationHandler()
+	settingsHandler := handlers.NewSettingsHandler()
 
 	// Użyj middleware'a dla wszystkich routów
 	r.Use(authMiddleware)
@@ -152,6 +153,22 @@ func main() {
 			"user": user,
 		})
 	})
+
+	// Ustawienia konta i systemu (chronione)
+	settingsGroup := r.Group("/settings")
+	settingsGroup.Use(func(c *gin.Context) {
+		_, exists := c.Get("user")
+		if !exists {
+			c.Redirect(http.StatusSeeOther, "/auth/login")
+			c.Abort()
+			return
+		}
+		c.Next()
+	})
+	{
+		settingsGroup.GET("", settingsHandler.Settings)
+		settingsGroup.POST("/change-password", settingsHandler.ChangePassword)
+	}
 
 	// Pobierz port z zmiennej środowiskowej lub ustaw domyślną wartość
 	port := os.Getenv("PORT")

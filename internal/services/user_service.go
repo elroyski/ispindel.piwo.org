@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/pkg/auth"
@@ -176,4 +177,39 @@ func (s *UserService) GetUserByID(userID uint) (*models.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
+	var user models.User
+	if err := s.db.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (s *UserService) UpdateLastLogin(userID uint) error {
+	return s.db.Model(&models.User{}).Where("id = ?", userID).
+		Update("last_login_at", time.Now()).Error
+}
+
+func (s *UserService) ChangePassword(userID uint, currentPassword, newPassword string) error {
+	// Pobierz użytkownika
+	var user models.User
+	if err := s.db.First(&user, userID).Error; err != nil {
+		return err
+	}
+
+	// Sprawdź czy aktualne hasło jest poprawne
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(currentPassword)); err != nil {
+		return errors.New("aktualne hasło jest niepoprawne")
+	}
+
+	// Haszuj nowe hasło
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.New("nie udało się zahaszować nowego hasła")
+	}
+
+	// Aktualizuj hasło
+	return s.db.Model(&user).Update("password", string(hashedPassword)).Error
 }
