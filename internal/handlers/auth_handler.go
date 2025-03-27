@@ -28,7 +28,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	name := c.PostForm("name")
 	email := c.PostForm("email")
 	password := c.PostForm("password")
-	passwordConfirm := c.PostForm("password_confirm")
+	passwordConfirm := c.PostForm("confirm_password")
 
 	// Walidacja danych
 	if name == "" || email == "" || password == "" {
@@ -167,4 +167,4 @@ func (h *AuthHandler) ResendActivation(c *gin.Context) {
 	c.HTML(http.StatusOK, "resend_activation.html", gin.H{
 		"success": "Email aktywacyjny został wysłany ponownie. Sprawdź swoją skrzynkę pocztową.",
 	})
-} 
+}
