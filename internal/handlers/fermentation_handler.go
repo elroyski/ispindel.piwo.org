@@ -417,6 +417,9 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 			"gravity":     initialGravity,
 			"temperature": initialTemperature,
 		}
+	} else {
+		// Jeśli nie udało się pobrać wartości początkowych, nie dodawaj ich do danych szablonu
+		log.Printf("Nie udało się pobrać wartości początkowych dla fermentacji %d: %v", fermentationID, err)
 	}
 
 	// Pobierz aktualne wartości (z ostatniego pomiaru)
@@ -427,6 +430,9 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 			"gravity":     lastMeasurement.Gravity,
 			"temperature": lastMeasurement.Temperature,
 		}
+	} else {
+		// Jeśli nie ma pomiarów, nie dodawaj wartości aktualnych do danych szablonu
+		log.Printf("Brak pomiarów dla fermentacji %d", fermentationID)
 	}
 
 	// Przygotuj dane do wykresów (ostatnie 12h, co godzinę)

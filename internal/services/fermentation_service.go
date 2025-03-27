@@ -195,6 +195,11 @@ func (s *FermentationService) GetAllMeasurements(fermentationID uint) ([]models.
 		return nil, err
 	}
 
+	// Jeśli IspindelID jest NULL (urządzenie zostało usunięte), zwróć pustą listę pomiarów
+	if fermentation.IspindelID == nil {
+		return []models.Measurement{}, nil
+	}
+
 	// Przygotuj zapytanie bazowe
 	query := database.DB.Where("ispindel_id = ?", fermentation.IspindelID)
 
@@ -222,6 +227,11 @@ func (s *FermentationService) GetMeasurementsLast12Hours(fermentationID uint) ([
 		return nil, err
 	}
 
+	// Jeśli IspindelID jest NULL (urządzenie zostało usunięte), zwróć pustą listę pomiarów
+	if fermentation.IspindelID == nil {
+		return []models.Measurement{}, nil
+	}
+
 	// Przygotuj zapytanie bazowe
 	query := database.DB.Where("ispindel_id = ?", fermentation.IspindelID)
 
@@ -245,6 +255,11 @@ func (s *FermentationService) GetHourlyMeasurementsLast12Hours(fermentationID ui
 	var fermentation models.Fermentation
 	if err := database.DB.First(&fermentation, fermentationID).Error; err != nil {
 		return nil, err
+	}
+
+	// Jeśli IspindelID jest NULL (urządzenie zostało usunięte), zwróć pustą listę pomiarów
+	if fermentation.IspindelID == nil {
+		return []models.Measurement{}, nil
 	}
 
 	// Przygotuj zapytanie bazowe
@@ -354,6 +369,11 @@ func (s *FermentationService) GetInitialMeasurements(fermentationID uint) (float
 	var fermentation models.Fermentation
 	if err := database.DB.First(&fermentation, fermentationID).Error; err != nil {
 		return 0, 0, err
+	}
+
+	// Jeśli IspindelID jest NULL (urządzenie zostało usunięte), zwróć błąd
+	if fermentation.IspindelID == nil {
+		return 0, 0, errors.New("urządzenie pomiarowe zostało usunięte")
 	}
 
 	// Pobierz pierwsze 3 pomiary posortowane rosnąco po timestamp
