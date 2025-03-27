@@ -29,9 +29,10 @@ func (s *FermentationService) CreateFermentation(userID uint, name, style, style
 	}
 
 	// Utwórz nową fermentację
+	id := ispindelID // Tworzymy zmienną, aby móc przekazać jej adres
 	fermentation := &models.Fermentation{
 		UserID:        userID,
-		IspindelID:    ispindelID,
+		IspindelID:    &id,
 		Name:          name,
 		Style:         style,
 		StyleID:       styleID,
@@ -86,6 +87,11 @@ func (s *FermentationService) GetFermentationByID(fermentationID, userID uint) (
 
 // EndFermentation kończy fermentację
 func (s *FermentationService) EndFermentation(fermentationID, userID uint) error {
+	return s.EndFermentationWithComment(fermentationID, userID, "")
+}
+
+// EndFermentationWithComment kończy fermentację i dodaje komentarz do pola opisu
+func (s *FermentationService) EndFermentationWithComment(fermentationID, userID uint, comment string) error {
 	fermentation, err := s.GetFermentationByID(fermentationID, userID)
 	if err != nil {
 		return err
@@ -98,6 +104,14 @@ func (s *FermentationService) EndFermentation(fermentationID, userID uint) error
 	now := time.Now()
 	fermentation.EndedAt = &now
 	fermentation.IsActive = false
+
+	if comment != "" {
+		if fermentation.Description != "" {
+			fermentation.Description = fermentation.Description + "\n\n" + comment
+		} else {
+			fermentation.Description = comment
+		}
+	}
 
 	return database.DB.Save(fermentation).Error
 }
@@ -367,4 +381,14 @@ func (s *FermentationService) GetInitialMeasurements(fermentationID uint) (float
 	avgTemperature := sumTemperature / float64(len(measurements))
 
 	return avgGravity, avgTemperature, nil
+}
+
+// GetActiveGermentationsByIspindelID zwraca listę aktywnych fermentacji dla danego urządzenia iSpindel
+func (s *FermentationService) GetActiveGermentationsByIspindelID(ispindelID uint) ([]models.Fermentation, error) {
+	var fermentations []models.Fermentation
+	id := ispindelID // Tworzymy zmienną, aby móc przekazać jej adres
+	if err := database.DB.Where("ispindel_id = ? AND is_active = true", &id).Find(&fermentations).Error; err != nil {
+		return nil, err
+	}
+	return fermentations, nil
 }

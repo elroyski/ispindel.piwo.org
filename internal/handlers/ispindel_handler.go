@@ -99,30 +99,29 @@ func (h *IspindelHandler) CreateIspindel(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, "/ispindels/"+strconv.FormatUint(uint64(ispindel.ID), 10))
 }
 
-// Szczegóły urządzenia
+// IspindelDetails wyświetla szczegóły urządzenia iSpindel
 func (h *IspindelHandler) IspindelDetails(c *gin.Context) {
+	// Pobierz zalogowanego użytkownika
 	user, exists := c.Get("user")
 	if !exists {
-		c.Redirect(http.StatusSeeOther, "/auth/login")
+		c.HTML(http.StatusUnauthorized, "login.html", gin.H{"error": "Wymagane zalogowanie"})
 		return
 	}
-
 	userModel := user.(*models.User)
-	ispindelID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+
+	// Pobierz ID urządzenia z parametrów URL
+	ispindelIDStr := c.Param("id")
+	ispindelID, err := strconv.ParseUint(ispindelIDStr, 10, 64)
 	if err != nil {
-		c.HTML(http.StatusBadRequest, "error.html", gin.H{
-			"error": "Nieprawidłowy identyfikator urządzenia",
-			"user":  userModel,
-		})
+		c.HTML(http.StatusBadRequest, "error.html", gin.H{"error": "Nieprawidłowe ID urządzenia"})
 		return
 	}
 
-	ispindel, err := h.ispindelService.GetIspindelByID(uint(ispindelID), userModel.ID)
+	// Pobierz szczegóły urządzenia
+	id := uint(ispindelID)
+	ispindel, err := h.ispindelService.GetIspindelByID(&id, userModel.ID)
 	if err != nil {
-		c.HTML(http.StatusNotFound, "error.html", gin.H{
-			"error": "Nie znaleziono urządzenia",
-			"user":  userModel,
-		})
+		c.HTML(http.StatusNotFound, "error.html", gin.H{"error": "Nie znaleziono urządzenia"})
 		return
 	}
 
@@ -181,7 +180,8 @@ func (h *IspindelHandler) EditIspindelForm(c *gin.Context) {
 		return
 	}
 
-	ispindel, err := h.ispindelService.GetIspindelByID(uint(ispindelID), userModel.ID)
+	id := uint(ispindelID)
+	ispindel, err := h.ispindelService.GetIspindelByID(&id, userModel.ID)
 	if err != nil {
 		c.HTML(http.StatusNotFound, "error.html", gin.H{
 			"error": "Nie znaleziono urządzenia",
@@ -196,30 +196,29 @@ func (h *IspindelHandler) EditIspindelForm(c *gin.Context) {
 	})
 }
 
-// UpdateIspindel aktualizuje dane urządzenia
+// UpdateIspindel aktualizuje urządzenie iSpindel
 func (h *IspindelHandler) UpdateIspindel(c *gin.Context) {
+	// Pobierz zalogowanego użytkownika
 	user, exists := c.Get("user")
 	if !exists {
-		c.Redirect(http.StatusSeeOther, "/auth/login")
+		c.HTML(http.StatusUnauthorized, "login.html", gin.H{"error": "Wymagane zalogowanie"})
 		return
 	}
-
 	userModel := user.(*models.User)
-	ispindelID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+
+	// Pobierz ID urządzenia z parametrów URL
+	ispindelIDStr := c.Param("id")
+	ispindelID, err := strconv.ParseUint(ispindelIDStr, 10, 64)
 	if err != nil {
-		c.HTML(http.StatusBadRequest, "error.html", gin.H{
-			"error": "Nieprawidłowy identyfikator urządzenia",
-			"user":  userModel,
-		})
+		c.HTML(http.StatusBadRequest, "error.html", gin.H{"error": "Nieprawidłowe ID urządzenia"})
 		return
 	}
 
-	ispindel, err := h.ispindelService.GetIspindelByID(uint(ispindelID), userModel.ID)
+	// Pobierz szczegóły urządzenia
+	id := uint(ispindelID)
+	ispindel, err := h.ispindelService.GetIspindelByID(&id, userModel.ID)
 	if err != nil {
-		c.HTML(http.StatusNotFound, "error.html", gin.H{
-			"error": "Nie znaleziono urządzenia",
-			"user":  userModel,
-		})
+		c.HTML(http.StatusNotFound, "error.html", gin.H{"error": "Nie znaleziono urządzenia"})
 		return
 	}
 
@@ -263,22 +262,27 @@ func (h *IspindelHandler) UpdateIspindel(c *gin.Context) {
 	c.Redirect(http.StatusSeeOther, "/ispindels/"+strconv.FormatUint(uint64(ispindel.ID), 10))
 }
 
-// Regeneracja klucza API
+// RegenerateAPIKey regeneruje klucz API dla urządzenia
 func (h *IspindelHandler) RegenerateAPIKey(c *gin.Context) {
+	// Pobierz zalogowanego użytkownika
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Wymagane logowanie"})
 		return
 	}
-
 	userModel := user.(*models.User)
-	ispindelID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+
+	// Pobierz ID urządzenia z parametrów URL
+	ispindelIDStr := c.Param("id")
+	ispindelID, err := strconv.ParseUint(ispindelIDStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Nieprawidłowy identyfikator urządzenia"})
 		return
 	}
 
-	apiKey, err := h.ispindelService.RegenerateAPIKey(uint(ispindelID), userModel.ID)
+	// Regeneruj klucz API
+	id := uint(ispindelID)
+	apiKey, err := h.ispindelService.RegenerateAPIKey(id, userModel.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Nie udało się wygenerować nowego klucza API: " + err.Error()})
 		return

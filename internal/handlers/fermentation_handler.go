@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -154,10 +155,13 @@ func (h *FermentationHandler) FermentationsList(c *gin.Context) {
 		}
 
 		// Pobierz urządzenie powiązane z fermentacją
-		ispindel, err := h.IspindelService.GetIspindelByID(fermentation.IspindelID, userModel.ID)
+		var ispindel *models.Ispindel
 		var ispindelData models.Ispindel
-		if err == nil {
-			ispindelData = *ispindel
+		if fermentation.IspindelID != nil {
+			ispindel, err = h.IspindelService.GetIspindelByID(fermentation.IspindelID, userModel.ID)
+			if err == nil {
+				ispindelData = *ispindel
+			}
 		}
 
 		fermentationsWithDuration = append(fermentationsWithDuration, FermentationWithDuration{
@@ -372,14 +376,14 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		return
 	}
 
-	// Pobierz szczegółowe informacje o urządzeniu
-	ispindel, err := h.IspindelService.GetIspindelByID(fermentation.IspindelID, userModel.ID)
-	if err != nil {
-		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
-			"error": "Błąd podczas pobierania informacji o urządzeniu",
-			"user":  userModel,
-		})
-		return
+	// Pobierz informacje o urządzeniu, jeśli fermentacja ma przypisane urządzenie
+	var ispindel *models.Ispindel
+	if fermentation.IspindelID != nil {
+		ispindel, err = h.IspindelService.GetIspindelByID(fermentation.IspindelID, userModel.ID)
+		if err != nil {
+			// Jeśli nie znaleziono urządzenia, nie zwracamy błędu - po prostu nie wyświetlimy informacji o urządzeniu
+			log.Printf("Nie znaleziono urządzenia o ID %d: %v", *fermentation.IspindelID, err)
+		}
 	}
 
 	// Pobierz pomiary z ostatnich 12 godzin dla wykresów (co godzinę)
@@ -446,7 +450,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 	c.HTML(http.StatusOK, "fermentation_details.html", gin.H{
 		"user":          userModel,
 		"fermentation":  fermentation,
-		"ispindel":      ispindel, // Dodane: pełne informacje o urządzeniu
+		"ispindel":      ispindel,
 		"duration":      h.FermentationService.GetFermentationDurationString(fermentation),
 		"hasData":       len(measurementsLast12h) > 0,
 		"measurements":  allMeasurements[:min(len(allMeasurements), 15)], // Pokaż tylko ostatnie 15 pomiarów w tabeli

@@ -98,10 +98,18 @@ func (s *IspindelService) GetIspindelsByUserID(userID uint) ([]models.Ispindel, 
 }
 
 // GetIspindelByID pobiera urządzenie po ID
-func (s *IspindelService) GetIspindelByID(ispindelID, userID uint) (*models.Ispindel, error) {
+func (s *IspindelService) GetIspindelByID(ispindelID *uint, userID uint) (*models.Ispindel, error) {
+	if ispindelID == nil {
+		return nil, errors.New("nie podano ID urządzenia")
+	}
+
 	var ispindel models.Ispindel
-	if err := database.DB.Where("id = ? AND user_id = ?", ispindelID, userID).First(&ispindel).Error; err != nil {
-		return nil, err
+	result := database.DB.Where("id = ? AND user_id = ?", *ispindelID, userID).First(&ispindel)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, errors.New("nie znaleziono urządzenia")
+		}
+		return nil, result.Error
 	}
 	return &ispindel, nil
 }
@@ -118,19 +126,52 @@ func (s *IspindelService) UpdateIspindel(ispindel *models.Ispindel) error {
 
 // DeleteIspindel usuwa urządzenie
 func (s *IspindelService) DeleteIspindel(ispindelID, userID uint) error {
-	result := database.DB.Where("id = ? AND user_id = ?", ispindelID, userID).Delete(&models.Ispindel{})
-	if result.Error != nil {
-		return result.Error
+	// Rozpocznij transakcję
+	tx := database.DB.Begin()
+
+	// Znajdź aktywne fermentacje dla tego urządzenia
+	var fermentations []models.Fermentation
+	id := ispindelID
+	if err := tx.Where("ispindel_id = ? AND user_id = ? AND is_active = true", &id, userID).Find(&fermentations).Error; err != nil {
+		tx.Rollback()
+		return err
 	}
-	if result.RowsAffected == 0 {
-		return errors.New("nie znaleziono urządzenia")
+
+	// Zakończ wszystkie aktywne fermentacje
+	for _, fermentation := range fermentations {
+		now := time.Now()
+		fermentation.EndedAt = &now
+		fermentation.IsActive = false
+		fermentation.IspindelID = nil // Usuń powiązanie z urządzeniem
+
+		// Dodaj komentarz o usunięciu urządzenia
+		comment := "Zakończono - usunięto urządzenie pomiarowe"
+		if fermentation.Description != "" {
+			fermentation.Description = fermentation.Description + "\n\n" + comment
+		} else {
+			fermentation.Description = comment
+		}
+
+		if err := tx.Save(&fermentation).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
-	return nil
+
+	// Usuń urządzenie
+	if err := tx.Where("id = ? AND user_id = ?", ispindelID, userID).Delete(&models.Ispindel{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Zatwierdź transakcję
+	return tx.Commit().Error
 }
 
 // RegenerateAPIKey generuje nowy klucz API dla urządzenia
 func (s *IspindelService) RegenerateAPIKey(ispindelID, userID uint) (string, error) {
-	ispindel, err := s.GetIspindelByID(ispindelID, userID)
+	id := ispindelID
+	ispindel, err := s.GetIspindelByID(&id, userID)
 	if err != nil {
 		return "", err
 	}
@@ -141,8 +182,9 @@ func (s *IspindelService) RegenerateAPIKey(ispindelID, userID uint) (string, err
 	}
 
 	ispindel.APIKey = apiKey
-	if err := database.DB.Save(ispindel).Error; err != nil {
-		return "", err
+	result := database.DB.Save(ispindel)
+	if result.Error != nil {
+		return "", result.Error
 	}
 
 	return apiKey, nil
