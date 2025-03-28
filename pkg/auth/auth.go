@@ -56,14 +56,20 @@ func InitPiwoOAuth() {
 		ClientSecret: os.Getenv("PIWO_OAUTH_CLIENT_SECRET"),
 		RedirectURL:  os.Getenv("PIWO_OAUTH_CALLBACK_URL"),
 		Scopes: []string{
-			"profile:read",
-			"email:read",
+			"read",
 		},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  os.Getenv("PIWO_OAUTH_AUTH_URL"),
 			TokenURL: os.Getenv("PIWO_OAUTH_TOKEN_URL"),
 		},
 	}
+
+	// Logowanie konfiguracji
+	fmt.Printf("Inicjalizacja piwo.org OAuth:\n")
+	fmt.Printf("  ClientID: %s\n", os.Getenv("PIWO_OAUTH_CLIENT_ID"))
+	fmt.Printf("  RedirectURL: %s\n", os.Getenv("PIWO_OAUTH_CALLBACK_URL"))
+	fmt.Printf("  AuthURL: %s\n", os.Getenv("PIWO_OAUTH_AUTH_URL"))
+	fmt.Printf("  TokenURL: %s\n", os.Getenv("PIWO_OAUTH_TOKEN_URL"))
 }
 
 // GetGoogleUserInfo pobiera informacje o użytkowniku z Google API
@@ -91,16 +97,28 @@ func GetGoogleUserInfo(token *oauth2.Token) (*GoogleUserInfo, error) {
 // GetPiwoUserInfo pobiera informacje o użytkowniku z piwo.org API
 func GetPiwoUserInfo(token *oauth2.Token) (*PiwoUserInfo, error) {
 	client := PiwoOAuthConfig.Client(oauth2.NoContext, token)
-	resp, err := client.Get("https://piwo.org/api/core/me")
+
+	// Logowanie dodatkowych informacji
+	fmt.Printf("Próba połączenia z API piwo.org. Token: %v\n", token)
+
+	// Zmiana URL na API core/me
+	userInfoURL := "https://piwo.org/api/core/me"
+	resp, err := client.Get(userInfoURL)
 	if err != nil {
 		return nil, fmt.Errorf("nie udało się pobrać informacji o użytkowniku: %v", err)
 	}
 	defer resp.Body.Close()
 
+	// Logowanie odpowiedzi
+	fmt.Printf("Odpowiedź z API piwo.org. Status: %d\n", resp.StatusCode)
+
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("nie udało się odczytać odpowiedzi: %v", err)
 	}
+
+	// Logowanie odpowiedzi JSON
+	fmt.Printf("Odpowiedź JSON: %s\n", string(data))
 
 	var userInfo PiwoUserInfo
 	if err := json.Unmarshal(data, &userInfo); err != nil {

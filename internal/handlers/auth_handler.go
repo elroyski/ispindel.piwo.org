@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -254,16 +255,25 @@ func (h *AuthHandler) PiwoLogin(c *gin.Context) {
 // PiwoCallback obsługuje odpowiedź od piwo.org po udanym logowaniu
 func (h *AuthHandler) PiwoCallback(c *gin.Context) {
 	code := c.Query("code")
+	fmt.Printf("Otrzymany kod autoryzacyjny: %s\n", code)
+
 	token, err := auth.PiwoOAuthConfig.Exchange(c, code)
 	if err != nil {
+		fmt.Printf("Błąd wymiany kodu na token: %v\n", err)
+
+		// Zwróć HTML z błędem
 		c.HTML(http.StatusBadRequest, "login.html", gin.H{
 			"error": "Nie udało się zalogować przez piwo.org: " + err.Error(),
 		})
 		return
 	}
 
+	fmt.Printf("Otrzymany token: %v\n", token)
+
 	userInfo, err := auth.GetPiwoUserInfo(token)
 	if err != nil {
+		fmt.Printf("Błąd pobierania informacji o użytkowniku: %v\n", err)
+
 		c.HTML(http.StatusBadRequest, "login.html", gin.H{
 			"error": "Nie udało się pobrać informacji o użytkowniku: " + err.Error(),
 		})
