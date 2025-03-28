@@ -244,3 +244,77 @@ func (h *AuthHandler) GoogleCallback(c *gin.Context) {
 	// Przekieruj na dashboard
 	c.Redirect(http.StatusSeeOther, "/dashboard")
 }
+
+// PiwoLogin rozpoczyna proces logowania przez piwo.org
+func (h *AuthHandler) PiwoLogin(c *gin.Context) {
+	url := auth.PiwoOAuthConfig.AuthCodeURL("state")
+	c.Redirect(http.StatusTemporaryRedirect, url)
+}
+
+// PiwoCallback obsługuje odpowiedź od piwo.org po udanym logowaniu
+func (h *AuthHandler) PiwoCallback(c *gin.Context) {
+	code := c.Query("code")
+	token, err := auth.PiwoOAuthConfig.Exchange(c, code)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "login.html", gin.H{
+			"error": "Nie udało się zalogować przez piwo.org: " + err.Error(),
+		})
+		return
+	}
+
+	userInfo, err := auth.GetPiwoUserInfo(token)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "login.html", gin.H{
+			"error": "Nie udało się pobrać informacji o użytkowniku: " + err.Error(),
+		})
+		return
+	}
+
+	// Sprawdź czy użytkownik już istnieje przez PiwoID
+	user, err := h.userService.GetUserByPiwoID(userInfo.ID)
+	if err != nil {
+		// Użytkownik nie istnieje - sprawdź czy istnieje konto z tym samym emailem
+		user, err = h.userService.GetUserByEmail(userInfo.Email)
+		if err != nil {
+			// Utwórz nowego użytkownika
+			user = &models.User{
+				Name:     userInfo.Name,
+				Email:    userInfo.Email,
+				PiwoID:   userInfo.ID,
+				Picture:  userInfo.Picture,
+				IsActive: true,
+			}
+			if err := h.userService.CreateUser(user); err != nil {
+				c.HTML(http.StatusInternalServerError, "login.html", gin.H{
+					"error": "Nie udało się utworzyć konta",
+				})
+				return
+			}
+		} else {
+			// Połącz istniejące konto z piwo.org
+			user.PiwoID = userInfo.ID
+			user.Picture = userInfo.Picture
+			if err := h.userService.UpdateUser(user); err != nil {
+				c.HTML(http.StatusInternalServerError, "login.html", gin.H{
+					"error": "Nie udało się połączyć konta z piwo.org",
+				})
+				return
+			}
+		}
+	}
+
+	// Wygeneruj token JWT
+	jwtToken, err := auth.GenerateToken(user.ID)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "login.html", gin.H{
+			"error": "Nie udało się wygenerować tokenu",
+		})
+		return
+	}
+
+	// Ustaw cookie z tokenem
+	c.SetCookie("token", jwtToken, 3600*24, "/", "", false, true)
+
+	// Przekieruj na dashboard
+	c.Redirect(http.StatusSeeOther, "/dashboard")
+}

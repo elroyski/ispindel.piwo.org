@@ -264,10 +264,19 @@ func (s *UserService) DeleteUser(userID int64) error {
 	return nil
 }
 
-// GetUserByGoogleID pobiera użytkownika na podstawie ID Google
+// GetUserByGoogleID pobiera użytkownika po identyfikatorze Google
 func (s *UserService) GetUserByGoogleID(googleID string) (*models.User, error) {
 	var user models.User
 	if err := s.db.Where("google_id = ?", googleID).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// GetUserByPiwoID pobiera użytkownika po identyfikatorze piwo.org
+func (s *UserService) GetUserByPiwoID(piwoID string) (*models.User, error) {
+	var user models.User
+	if err := s.db.Where("piwo_id = ?", piwoID).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

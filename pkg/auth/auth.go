@@ -17,6 +17,7 @@ import (
 var (
 	jwtSecret         = []byte(getEnvOrDefault("JWT_SECRET", "twoj-tajny-klucz-jwt"))
 	GoogleOAuthConfig *oauth2.Config
+	PiwoOAuthConfig   *oauth2.Config
 )
 
 type GoogleUserInfo struct {
@@ -25,6 +26,13 @@ type GoogleUserInfo struct {
 	VerifiedEmail bool   `json:"verified_email"`
 	Name          string `json:"name"`
 	Picture       string `json:"picture"`
+}
+
+type PiwoUserInfo struct {
+	ID      string `json:"id"`
+	Email   string `json:"email"`
+	Name    string `json:"name"`
+	Picture string `json:"photo_url"`
 }
 
 // InitGoogleOAuth inicjalizuje konfigurację OAuth2 dla Google
@@ -38,6 +46,23 @@ func InitGoogleOAuth() {
 			"https://www.googleapis.com/auth/userinfo.profile",
 		},
 		Endpoint: google.Endpoint,
+	}
+}
+
+// InitPiwoOAuth inicjalizuje konfigurację OAuth2 dla piwo.org
+func InitPiwoOAuth() {
+	PiwoOAuthConfig = &oauth2.Config{
+		ClientID:     os.Getenv("PIWO_OAUTH_CLIENT_ID"),
+		ClientSecret: os.Getenv("PIWO_OAUTH_CLIENT_SECRET"),
+		RedirectURL:  os.Getenv("PIWO_OAUTH_CALLBACK_URL"),
+		Scopes: []string{
+			"profile:read",
+			"email:read",
+		},
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  os.Getenv("PIWO_OAUTH_AUTH_URL"),
+			TokenURL: os.Getenv("PIWO_OAUTH_TOKEN_URL"),
+		},
 	}
 }
 
@@ -56,6 +81,28 @@ func GetGoogleUserInfo(token *oauth2.Token) (*GoogleUserInfo, error) {
 	}
 
 	var userInfo GoogleUserInfo
+	if err := json.Unmarshal(data, &userInfo); err != nil {
+		return nil, fmt.Errorf("nie udało się przetworzyć danych użytkownika: %v", err)
+	}
+
+	return &userInfo, nil
+}
+
+// GetPiwoUserInfo pobiera informacje o użytkowniku z piwo.org API
+func GetPiwoUserInfo(token *oauth2.Token) (*PiwoUserInfo, error) {
+	client := PiwoOAuthConfig.Client(oauth2.NoContext, token)
+	resp, err := client.Get("https://piwo.org/api/core/me")
+	if err != nil {
+		return nil, fmt.Errorf("nie udało się pobrać informacji o użytkowniku: %v", err)
+	}
+	defer resp.Body.Close()
+
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("nie udało się odczytać odpowiedzi: %v", err)
+	}
+
+	var userInfo PiwoUserInfo
 	if err := json.Unmarshal(data, &userInfo); err != nil {
 		return nil, fmt.Errorf("nie udało się przetworzyć danych użytkownika: %v", err)
 	}

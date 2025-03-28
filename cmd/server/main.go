@@ -26,6 +26,9 @@ func main() {
 	// Inicjalizacja Google OAuth
 	auth.InitGoogleOAuth()
 
+	// Inicjalizacja piwo.org OAuth
+	auth.InitPiwoOAuth()
+
 	// Inicjalizacja routera Gin
 	r := gin.Default()
 
@@ -96,6 +99,8 @@ func main() {
 		auth.POST("/resend-activation", authHandler.ResendActivation)
 		auth.GET("/google/login", authHandler.GoogleLogin)
 		auth.GET("/google/callback", authHandler.GoogleCallback)
+		auth.GET("/piwo/login", authHandler.PiwoLogin)
+		auth.GET("/piwo/callback", authHandler.PiwoCallback)
 	}
 
 	// Grupa routów dla zarządzania urządzeniami iSpindel
