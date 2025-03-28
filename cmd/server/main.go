@@ -168,6 +168,7 @@ func main() {
 	{
 		settingsGroup.GET("", settingsHandler.Settings)
 		settingsGroup.POST("/change-password", settingsHandler.ChangePassword)
+		settingsGroup.POST("/delete-account", settingsHandler.DeleteAccount)
 	}
 
 	// Pobierz port z zmiennej środowiskowej lub ustaw domyślną wartość

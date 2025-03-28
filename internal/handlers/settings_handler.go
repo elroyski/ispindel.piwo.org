@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/internal/services"
 )
@@ -111,4 +112,51 @@ func (h *SettingsHandler) ChangePassword(c *gin.Context) {
 		"success": "Hasło zostało zmienione pomyślnie",
 		"version": version,
 	})
+}
+
+// DeleteAccount obsługuje żądanie usunięcia konta użytkownika
+func (h *SettingsHandler) DeleteAccount(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.Redirect(http.StatusSeeOther, "/auth/login")
+		return
+	}
+	userModel := user.(*models.User)
+
+	// Pobierz i sprawdź hasło
+	password := c.PostForm("password")
+	if password == "" {
+		c.HTML(http.StatusBadRequest, "settings.html", gin.H{
+			"user":    userModel,
+			"error":   "Hasło jest wymagane do usunięcia konta",
+			"version": getSystemVersion(),
+		})
+		return
+	}
+
+	// Sprawdź poprawność hasła
+	if err := bcrypt.CompareHashAndPassword([]byte(userModel.Password), []byte(password)); err != nil {
+		c.HTML(http.StatusBadRequest, "settings.html", gin.H{
+			"user":    userModel,
+			"error":   "Nieprawidłowe hasło",
+			"version": getSystemVersion(),
+		})
+		return
+	}
+
+	// Usuń konto użytkownika
+	if err := h.userService.DeleteUser(int64(userModel.ID)); err != nil {
+		c.HTML(http.StatusInternalServerError, "settings.html", gin.H{
+			"user":    userModel,
+			"error":   "Nie udało się usunąć konta: " + err.Error(),
+			"version": getSystemVersion(),
+		})
+		return
+	}
+
+	// Wyloguj użytkownika
+	c.SetCookie("session", "", -1, "/", "", false, true)
+
+	// Przekieruj na stronę logowania
+	c.Redirect(http.StatusSeeOther, "/auth/login")
 }

@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -212,4 +213,53 @@ func (s *UserService) ChangePassword(userID uint, currentPassword, newPassword s
 
 	// Aktualizuj hasło
 	return s.db.Model(&user).Update("password", string(hashedPassword)).Error
+}
+
+// DeleteUser usuwa konto użytkownika wraz ze wszystkimi powiązanymi danymi
+func (s *UserService) DeleteUser(userID int64) error {
+	// Rozpocznij transakcję
+	tx := s.db.Begin()
+	if tx.Error != nil {
+		return fmt.Errorf("nie można rozpocząć transakcji: %v", tx.Error)
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Usuń wszystkie pomiary powiązane z urządzeniami użytkownika
+	if err := tx.Exec(`
+		DELETE FROM measurements 
+		WHERE ispindel_id IN (
+			SELECT id FROM ispindels WHERE user_id = ?
+		)`, userID).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("nie można usunąć pomiarów: %v", err)
+	}
+
+	// Usuń wszystkie fermentacje użytkownika
+	if err := tx.Exec("DELETE FROM fermentations WHERE user_id = ?", userID).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("nie można usunąć fermentacji: %v", err)
+	}
+
+	// Usuń wszystkie urządzenia iSpindel użytkownika
+	if err := tx.Exec("DELETE FROM ispindels WHERE user_id = ?", userID).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("nie można usunąć urządzeń: %v", err)
+	}
+
+	// Na końcu usuń konto użytkownika
+	if err := tx.Exec("DELETE FROM users WHERE id = ?", userID).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("nie można usunąć użytkownika: %v", err)
+	}
+
+	// Zatwierdź transakcję
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("nie można zatwierdzić transakcji: %v", err)
+	}
+
+	return nil
 }
