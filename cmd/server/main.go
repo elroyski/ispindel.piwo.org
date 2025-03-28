@@ -23,6 +23,9 @@ func main() {
 	// Inicjalizacja mailera
 	mailer.InitMailer()
 
+	// Inicjalizacja Google OAuth
+	auth.InitGoogleOAuth()
+
 	// Inicjalizacja routera Gin
 	r := gin.Default()
 
@@ -91,6 +94,8 @@ func main() {
 			c.HTML(http.StatusOK, "resend_activation.html", gin.H{})
 		})
 		auth.POST("/resend-activation", authHandler.ResendActivation)
+		auth.GET("/google/login", authHandler.GoogleLogin)
+		auth.GET("/google/callback", authHandler.GoogleCallback)
 	}
 
 	// Grupa routów dla zarządzania urządzeniami iSpindel

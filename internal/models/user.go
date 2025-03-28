@@ -19,4 +19,8 @@ type User struct {
 	ActivationToken     string    `gorm:"size:100" json:"-"`
 	ActivationExpires   time.Time `json:"-"`
 	ActivationCompleted bool      `gorm:"default:false" json:"-"`
-} 
+	GoogleID            string    `gorm:"size:255;unique" json:"-"`
+	Picture             string    `gorm:"size:255" json:"-"`
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
+}

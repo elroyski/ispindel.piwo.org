@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"ispindel.piwo.org/internal/auth"
+	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/internal/services"
 )
 
@@ -167,4 +169,78 @@ func (h *AuthHandler) ResendActivation(c *gin.Context) {
 	c.HTML(http.StatusOK, "resend_activation.html", gin.H{
 		"success": "Email aktywacyjny został wysłany ponownie. Sprawdź swoją skrzynkę pocztową.",
 	})
+}
+
+// GoogleLogin rozpoczyna proces logowania przez Google
+func (h *AuthHandler) GoogleLogin(c *gin.Context) {
+	url := auth.GoogleOAuthConfig.AuthCodeURL("state")
+	c.Redirect(http.StatusTemporaryRedirect, url)
+}
+
+// GoogleCallback obsługuje odpowiedź od Google po udanym logowaniu
+func (h *AuthHandler) GoogleCallback(c *gin.Context) {
+	code := c.Query("code")
+	token, err := auth.GoogleOAuthConfig.Exchange(c, code)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "login.html", gin.H{
+			"error": "Nie udało się zalogować przez Google",
+		})
+		return
+	}
+
+	userInfo, err := auth.GetGoogleUserInfo(token)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "login.html", gin.H{
+			"error": "Nie udało się pobrać informacji o użytkowniku",
+		})
+		return
+	}
+
+	// Sprawdź czy użytkownik już istnieje
+	user, err := h.userService.GetUserByGoogleID(userInfo.ID)
+	if err != nil {
+		// Użytkownik nie istnieje - sprawdź czy istnieje konto z tym samym emailem
+		user, err = h.userService.GetUserByEmail(userInfo.Email)
+		if err != nil {
+			// Utwórz nowego użytkownika
+			user = &models.User{
+				Name:     userInfo.Name,
+				Email:    userInfo.Email,
+				GoogleID: userInfo.ID,
+				Picture:  userInfo.Picture,
+				IsActive: true,
+			}
+			if err := h.userService.CreateUser(user); err != nil {
+				c.HTML(http.StatusInternalServerError, "login.html", gin.H{
+					"error": "Nie udało się utworzyć konta",
+				})
+				return
+			}
+		} else {
+			// Połącz istniejące konto z Google
+			user.GoogleID = userInfo.ID
+			user.Picture = userInfo.Picture
+			if err := h.userService.UpdateUser(user); err != nil {
+				c.HTML(http.StatusInternalServerError, "login.html", gin.H{
+					"error": "Nie udało się połączyć konta z Google",
+				})
+				return
+			}
+		}
+	}
+
+	// Wygeneruj token JWT
+	jwtToken, err := auth.GenerateToken(user.ID)
+	if err != nil {
+		c.HTML(http.StatusInternalServerError, "login.html", gin.H{
+			"error": "Nie udało się wygenerować tokenu",
+		})
+		return
+	}
+
+	// Ustaw cookie z tokenem
+	c.SetCookie("token", jwtToken, 3600*24, "/", "", false, true)
+
+	// Przekieruj na dashboard
+	c.Redirect(http.StatusSeeOther, "/dashboard")
 }

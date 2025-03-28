@@ -263,3 +263,22 @@ func (s *UserService) DeleteUser(userID int64) error {
 
 	return nil
 }
+
+// GetUserByGoogleID pobiera użytkownika na podstawie ID Google
+func (s *UserService) GetUserByGoogleID(googleID string) (*models.User, error) {
+	var user models.User
+	if err := s.db.Where("google_id = ?", googleID).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+// CreateUser tworzy nowego użytkownika
+func (s *UserService) CreateUser(user *models.User) error {
+	return s.db.Create(user).Error
+}
+
+// UpdateUser aktualizuje dane użytkownika
+func (s *UserService) UpdateUser(user *models.User) error {
+	return s.db.Save(user).Error
+}
