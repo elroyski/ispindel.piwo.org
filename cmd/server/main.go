@@ -136,7 +136,11 @@ func main() {
 
 	// Strona główna
 	r.GET("/", func(c *gin.Context) {
-		user, _ := c.Get("user")
+		user, exists := c.Get("user")
+		if exists {
+			c.Redirect(http.StatusSeeOther, "/dashboard")
+			return
+		}
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			"user": user,
 		})
