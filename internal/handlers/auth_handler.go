@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"ispindel.piwo.org/internal/auth"
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/internal/services"
+	"ispindel.piwo.org/pkg/auth"
 )
 
 type AuthHandler struct {
