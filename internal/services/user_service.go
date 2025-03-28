@@ -274,7 +274,7 @@ func (s *UserService) GetUserByGoogleID(googleID string) (*models.User, error) {
 }
 
 // GetUserByPiwoID pobiera użytkownika po identyfikatorze piwo.org
-func (s *UserService) GetUserByPiwoID(piwoID string) (*models.User, error) {
+func (s *UserService) GetUserByPiwoID(piwoID int) (*models.User, error) {
 	var user models.User
 	if err := s.db.Where("piwo_id = ?", piwoID).First(&user).Error; err != nil {
 		return nil, err

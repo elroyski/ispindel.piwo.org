@@ -20,7 +20,7 @@ type User struct {
 	ActivationExpires   time.Time `json:"-"`
 	ActivationCompleted bool      `gorm:"default:false" json:"-"`
 	GoogleID            string    `gorm:"size:255;unique" json:"-"`
-	PiwoID              string    `gorm:"size:255;unique" json:"-"`
+	PiwoID              int       `gorm:"unique" json:"-"`
 	Picture             string    `gorm:"size:255" json:"-"`
 	CreatedAt           time.Time
 	UpdatedAt           time.Time

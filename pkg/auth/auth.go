@@ -29,7 +29,7 @@ type GoogleUserInfo struct {
 }
 
 type PiwoUserInfo struct {
-	ID      string `json:"id"`
+	ID      int    `json:"id"`
 	Email   string `json:"email"`
 	Name    string `json:"name"`
 	Picture string `json:"photo_url"`
@@ -122,11 +122,25 @@ func GetPiwoUserInfo(token *oauth2.Token) (*PiwoUserInfo, error) {
 	// Logowanie odpowiedzi JSON
 	fmt.Printf("Odpowiedź JSON: %s\n", string(data))
 
+	// Najpierw spróbuj rozparsować częściowo, żeby sprawdzić strukturę
+	var rawData map[string]interface{}
+	if err := json.Unmarshal(data, &rawData); err != nil {
+		fmt.Printf("Błąd parsowania odpowiedzi JSON jako mapy: %v\n", err)
+	} else {
+		fmt.Printf("Struktura odpowiedzi JSON: %+v\n", rawData)
+
+		// Sprawdź typ pola id
+		if id, ok := rawData["id"]; ok {
+			fmt.Printf("ID typu: %T, wartość: %v\n", id, id)
+		}
+	}
+
 	var userInfo PiwoUserInfo
 	if err := json.Unmarshal(data, &userInfo); err != nil {
 		return nil, fmt.Errorf("nie udało się przetworzyć danych użytkownika: %v", err)
 	}
 
+	fmt.Printf("Sparsowane dane użytkownika: %+v\n", userInfo)
 	return &userInfo, nil
 }
 
