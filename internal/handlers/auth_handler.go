@@ -254,8 +254,28 @@ func (h *AuthHandler) PiwoLogin(c *gin.Context) {
 
 // PiwoCallback obsługuje odpowiedź od piwo.org po udanym logowaniu
 func (h *AuthHandler) PiwoCallback(c *gin.Context) {
+	// Sprawdź, czy wystąpił błąd w parametrach URL
+	errorParam := c.Query("error")
+	if errorParam != "" {
+		errorDesc := c.Query("error_description")
+		fmt.Printf("Otrzymano błąd OAuth: %s, opis: %s\n", errorParam, errorDesc)
+		c.HTML(http.StatusBadRequest, "login.html", gin.H{
+			"error": fmt.Sprintf("Błąd autoryzacji piwo.org: %s (%s)", errorParam, errorDesc),
+		})
+		return
+	}
+
 	code := c.Query("code")
 	fmt.Printf("Otrzymany kod autoryzacyjny: %s\n", code)
+
+	// Sprawdź czy kod jest pusty
+	if code == "" {
+		fmt.Printf("Pusty kod autoryzacyjny\n")
+		c.HTML(http.StatusBadRequest, "login.html", gin.H{
+			"error": "Nie otrzymano kodu autoryzacyjnego od piwo.org",
+		})
+		return
+	}
 
 	token, err := auth.PiwoOAuthConfig.Exchange(c, code)
 	if err != nil {

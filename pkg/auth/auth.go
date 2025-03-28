@@ -56,7 +56,7 @@ func InitPiwoOAuth() {
 		ClientSecret: os.Getenv("PIWO_OAUTH_CLIENT_SECRET"),
 		RedirectURL:  os.Getenv("PIWO_OAUTH_CALLBACK_URL"),
 		Scopes: []string{
-			"read",
+			"basic", // Zmiana z "read" na "basic" jako podstawowy zakres dostępu
 		},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  os.Getenv("PIWO_OAUTH_AUTH_URL"),
@@ -70,6 +70,7 @@ func InitPiwoOAuth() {
 	fmt.Printf("  RedirectURL: %s\n", os.Getenv("PIWO_OAUTH_CALLBACK_URL"))
 	fmt.Printf("  AuthURL: %s\n", os.Getenv("PIWO_OAUTH_AUTH_URL"))
 	fmt.Printf("  TokenURL: %s\n", os.Getenv("PIWO_OAUTH_TOKEN_URL"))
+	fmt.Printf("  Scopes: %v\n", PiwoOAuthConfig.Scopes)
 }
 
 // GetGoogleUserInfo pobiera informacje o użytkowniku z Google API
