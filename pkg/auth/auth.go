@@ -56,7 +56,8 @@ func InitPiwoOAuth() {
 		ClientSecret: os.Getenv("PIWO_OAUTH_CLIENT_SECRET"),
 		RedirectURL:  os.Getenv("PIWO_OAUTH_CALLBACK_URL"),
 		Scopes: []string{
-			"basic", // Zmiana z "read" na "basic" jako podstawowy zakres dostępu
+			"profile", // Zmiana z "basic" na "profile" zgodnie z IPS
+			"email",   // Dodanie "email" dla dostępu do emaila użytkownika
 		},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  os.Getenv("PIWO_OAUTH_AUTH_URL"),
