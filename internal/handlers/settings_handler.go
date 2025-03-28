@@ -1,7 +1,11 @@
 package handlers
 
 import (
+	"bufio"
 	"net/http"
+	"os"
+	"regexp"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"ispindel.piwo.org/internal/models"
@@ -20,6 +24,34 @@ func NewSettingsHandler() *SettingsHandler {
 	}
 }
 
+// getSystemVersion pobiera wersję systemu z pliku go.mod
+func getSystemVersion() string {
+	defaultVersion := "1.0.0"
+
+	// Otwórz plik go.mod
+	file, err := os.Open("go.mod")
+	if err != nil {
+		return defaultVersion
+	}
+	defer file.Close()
+
+	// Wyszukaj linię z wersją Go
+	scanner := bufio.NewScanner(file)
+	goVersionRegex := regexp.MustCompile(`go (\d+\.\d+\.\d+)`)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "go ") {
+			matches := goVersionRegex.FindStringSubmatch(line)
+			if len(matches) >= 2 {
+				return matches[1] // Zwróć wersję Go jako wersję systemu
+			}
+		}
+	}
+
+	return defaultVersion
+}
+
 // Settings wyświetla stronę ustawień konta i systemu
 func (h *SettingsHandler) Settings(c *gin.Context) {
 	user, exists := c.Get("user")
@@ -28,8 +60,8 @@ func (h *SettingsHandler) Settings(c *gin.Context) {
 		return
 	}
 
-	// Definicja wersji systemu
-	version := "1.0.0"
+	// Pobierz wersję systemu
+	version := getSystemVersion()
 
 	c.HTML(http.StatusOK, "settings.html", gin.H{
 		"user":    user.(*models.User),
@@ -50,12 +82,15 @@ func (h *SettingsHandler) ChangePassword(c *gin.Context) {
 	newPassword := c.PostForm("new_password")
 	confirmPassword := c.PostForm("confirm_password")
 
+	// Pobierz wersję systemu
+	version := getSystemVersion()
+
 	// Sprawdzenie czy nowe hasło i potwierdzenie są takie same
 	if newPassword != confirmPassword {
 		c.HTML(http.StatusBadRequest, "settings.html", gin.H{
 			"user":    userModel,
 			"error":   "Nowe hasło i potwierdzenie hasła nie są identyczne",
-			"version": "1.0.0",
+			"version": version,
 		})
 		return
 	}
@@ -66,7 +101,7 @@ func (h *SettingsHandler) ChangePassword(c *gin.Context) {
 		c.HTML(http.StatusBadRequest, "settings.html", gin.H{
 			"user":    userModel,
 			"error":   "Nie udało się zmienić hasła: " + err.Error(),
-			"version": "1.0.0",
+			"version": version,
 		})
 		return
 	}
@@ -74,6 +109,6 @@ func (h *SettingsHandler) ChangePassword(c *gin.Context) {
 	c.HTML(http.StatusOK, "settings.html", gin.H{
 		"user":    userModel,
 		"success": "Hasło zostało zmienione pomyślnie",
-		"version": "1.0.0",
+		"version": version,
 	})
 }
