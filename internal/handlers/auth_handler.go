@@ -342,6 +342,12 @@ func (h *AuthHandler) PiwoCallback(c *gin.Context) {
 		return
 	}
 
+	// Aktualizuj datę ostatniego logowania
+	if err := h.userService.UpdateLastLogin(user.ID); err != nil {
+		// Logujemy błąd, ale kontynuujemy proces logowania
+		fmt.Printf("Błąd aktualizacji daty logowania: %v\n", err)
+	}
+
 	// Ustaw cookie z tokenem
 	c.SetCookie("token", jwtToken, 3600*24, "/", "", false, true)
 
