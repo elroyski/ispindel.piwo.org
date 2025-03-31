@@ -128,26 +128,16 @@
                             {{$maxV := 4.2}}
                             {{$minV := 3.0}}
                             {{$actualV := (subtract $batVoltage $ldoDropV)}}
-                            {{$percentage := multiply (divide (subtract $actualV $minV) (subtract $maxV $minV)) 100}}
-                            {{if gt $percentage 100.0}}{{$percentage = 100.0}}{{end}}
-                            {{if lt $percentage 0.0}}{{$percentage = 0.0}}{{end}}
+                            {{$exact_percentage := multiply (divide (subtract $actualV $minV) (subtract $maxV $minV)) 100}}
+                            {{if gt $exact_percentage 100.0}}{{$exact_percentage = 100.0}}{{end}}
+                            {{if lt $exact_percentage 0.0}}{{$exact_percentage = 0.0}}{{end}}
                             
                             <div class="flex items-center">
                                 <div class="text-2xl font-bold mr-3">{{printf "%.2f" $batVoltage}}V</div>
                                 <div class="text-sm ml-1">({{printf "%.2f" $actualV}}V)</div>
                                 <div class="text-xs text-gray-500 ml-2">LDO: {{printf "%.2f" $ldoDropV}}V</div>
                             </div>
-
-                            <!-- Debugging -->
-                            <div class="text-xs text-gray-500 mt-1">
-                                Aktualne: {{printf "%.2f" $actualV}}V, Min: {{printf "%.1f" $minV}}V, Max: {{printf "%.1f" $maxV}}V
-                                <br>Obliczenie: ({{printf "%.2f" $actualV}} - {{printf "%.1f" $minV}}) / ({{printf "%.1f" $maxV}} - {{printf "%.1f" $minV}}) * 100 = {{printf "%.2f" $percentage}}%
-                            </div>
                             
-                            {{/* Dla pewności, obliczmy procent jeszcze raz */}}
-                            {{$exact_percentage := multiply (divide (subtract $actualV $minV) (subtract $maxV $minV)) 100}}
-                            
-                            {{/* Określ stan i kolor baterii na podstawie procentu */}}
                             {{$batteryColor := "#ef4444"}}
                             {{$batteryState := "Stan krytyczny"}}
                             {{$stateColor := "text-red-700"}}
@@ -172,13 +162,6 @@
                             <div class="text-xs text-gray-600 mt-1">
                                 <span>Pozostało około {{printf "%.1f" $exact_percentage}}%</span>
                                 <span class="ml-2 {{$stateColor}}">{{$batteryState}}</span>
-                            </div>
-                            
-                            <!-- Dodatkowe informacje diagnostyczne -->
-                            <div class="text-xs text-gray-500 mt-2">
-                                Próg dobry: 60%, średni: 25%, niski: 15%<br>
-                                Obliczony procent: {{printf "%.2f" $exact_percentage}}%<br>
-                                Czy ≥ 25%: {{ge $exact_percentage 25.0}}
                             </div>
                         {{else}}
                             <div class="text-gray-500">Brak danych o baterii</div>
