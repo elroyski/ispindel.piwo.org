@@ -137,35 +137,48 @@
                                 <div class="text-sm ml-1">({{printf "%.2f" $actualV}}V)</div>
                                 <div class="text-xs text-gray-500 ml-2">LDO: {{printf "%.2f" $ldoDropV}}V</div>
                             </div>
+
+                            <!-- Debugging -->
+                            <div class="text-xs text-gray-500 mt-1">
+                                Aktualne: {{printf "%.2f" $actualV}}V, Min: {{printf "%.1f" $minV}}V, Max: {{printf "%.1f" $maxV}}V
+                                <br>Obliczenie: ({{printf "%.2f" $actualV}} - {{printf "%.1f" $minV}}) / ({{printf "%.1f" $maxV}} - {{printf "%.1f" $minV}}) * 100 = {{printf "%.2f" $percentage}}%
+                            </div>
                             
+                            {{/* Dla pewności, obliczmy procent jeszcze raz */}}
+                            {{$exact_percentage := multiply (divide (subtract $actualV $minV) (subtract $maxV $minV)) 100}}
+                            
+                            {{/* Określ stan i kolor baterii na podstawie procentu */}}
                             {{$batteryColor := "#ef4444"}}
-                            {{if ge $percentage 60.0}}
-                                {{$batteryColor = "#22c55e"}}
-                            {{else if ge $percentage 30.0}}
-                                {{$batteryColor = "#eab308"}}
-                            {{else if ge $percentage 15.0}}
-                                {{$batteryColor = "#f97316"}}
-                            {{end}}
-                            
                             {{$batteryState := "Stan krytyczny"}}
                             {{$stateColor := "text-red-700"}}
-                            {{if ge $percentage 60.0}}
+                            
+                            {{if ge $exact_percentage 60.0}}
+                                {{$batteryColor = "#22c55e"}}
                                 {{$batteryState = "Stan dobry"}}
                                 {{$stateColor = "text-green-700"}}
-                            {{else if ge $percentage 30.0}}
+                            {{else if ge $exact_percentage 30.0}}
+                                {{$batteryColor = "#eab308"}}
                                 {{$batteryState = "Stan średni"}}
                                 {{$stateColor = "text-yellow-700"}}
-                            {{else if ge $percentage 15.0}}
+                            {{else if ge $exact_percentage 15.0}}
+                                {{$batteryColor = "#f97316"}}
                                 {{$batteryState = "Stan niski"}}
                                 {{$stateColor = "text-orange-700"}}
                             {{end}}
                             
                             <div class="w-full bg-gray-200 rounded-full h-4 mt-2">
-                                <div class="rounded-full h-4" style="width: {{$percentage}}%; background-color: {{$batteryColor}}"></div>
+                                <div class="rounded-full h-4" style="width: {{$exact_percentage}}%; background-color: {{$batteryColor}}"></div>
                             </div>
                             <div class="text-xs text-gray-600 mt-1">
-                                <span>Pozostało około {{printf "%.0f" $percentage}}%</span>
+                                <span>Pozostało około {{printf "%.1f" $exact_percentage}}%</span>
                                 <span class="ml-2 {{$stateColor}}">{{$batteryState}}</span>
+                            </div>
+                            
+                            <!-- Dodatkowe informacje diagnostyczne -->
+                            <div class="text-xs text-gray-500 mt-2">
+                                Próg dobry: 60%, średni: 30%, niski: 15%<br>
+                                Obliczony procent: {{printf "%.2f" $exact_percentage}}%<br>
+                                Czy ≥ 30%: {{ge $exact_percentage 30.0}}
                             </div>
                         {{else}}
                             <div class="text-gray-500">Brak danych o baterii</div>
