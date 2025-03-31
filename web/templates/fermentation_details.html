@@ -110,12 +110,12 @@
                 </div>
 
                 <!-- Zasianie kafelek -->
-                <div class="bg-green-100 rounded-lg p-4 mt-4">
+                <div class="bg-cyan-100 rounded-lg p-4 mt-4">
                     <div class="flex items-center mb-2">
-                        <i class="fas fa-seedling text-green-500 mr-2"></i>
-                        <span class="text-green-700">Zasianie</span>
+                        <i class="fas fa-seedling text-cyan-500 mr-2"></i>
+                        <span class="text-cyan-700">Zasianie</span>
                     </div>
-                    <div class="text-lg text-green-800">
+                    <div class="text-lg text-cyan-800">
                         <!-- Tu będzie zawartość kafelka Zasianie -->
                     </div>
                 </div>
@@ -222,15 +222,7 @@
                                 <p class="text-sm text-gray-600">rzeczywiste</p>
                             </div>
                         </div>
-                        <div class="bg-rose-100 rounded-lg p-4 mt-4">
-                            <div class="flex items-center mb-2">
-                                <i class="fas fa-seedling text-rose-500 mr-2"></i>
-                                <span class="text-rose-700">Zasianie</span>
-                            </div>
-                            <div class="text-lg text-rose-800">
-                                <!-- Tu będzie zawartość kafelka Zasianie -->
-                            </div>
-                        </div>
+                    
                         <form action="/fermentations/{{.fermentation.ID}}/end" method="POST" onsubmit="return confirm('Czy na pewno chcesz zakończyć tę fermentację?');">
                             <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded">
                                 Zakończ fermentację
