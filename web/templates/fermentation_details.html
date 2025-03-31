@@ -122,6 +122,9 @@
                                 {{$batVoltage = index .batteries 0}}
                             {{end}}
                             {{$ldoDropV := 0.35}}
+                            {{if .env.LDO}}
+                                {{$ldoDropV = .env.LDO}}
+                            {{end}}
                             {{$maxV := 4.2}}
                             {{$minV := 3.0}}
                             {{$actualV := (subtract $batVoltage $ldoDropV)}}
@@ -132,6 +135,7 @@
                             <div class="flex items-center">
                                 <div class="text-2xl font-bold mr-3">{{printf "%.2f" $batVoltage}}V</div>
                                 <div class="text-sm ml-1">({{printf "%.2f" $actualV}}V)</div>
+                                <div class="text-xs text-gray-500 ml-2">LDO: {{printf "%.2f" $ldoDropV}}V</div>
                             </div>
                             
                             {{$batteryColor := "#ef4444"}}
