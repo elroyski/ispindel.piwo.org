@@ -113,7 +113,7 @@
                 <div class="bg-cyan-100 rounded-lg p-4 mt-4">
                     <div class="flex items-center mb-2">
                         <i class="fas fa-battery-full text-cyan-500 mr-2"></i>
-                        <span class="text-cyan-700">Stan baterii</span>
+                        <span class="text-cyan-700">Stan zasilania</span>
                     </div>
                     <div class="text-lg text-cyan-800 mb-2">
                         {{if .currentValues}}
@@ -135,11 +135,11 @@
                             </div>
                             
                             {{$batteryColor := "#ef4444"}}
-                            {{if ge $percentage 70.0}}
+                            {{if ge $percentage 60.0}}
                                 {{$batteryColor = "#22c55e"}}
-                            {{else if ge $percentage 40.0}}
+                            {{else if ge $percentage 30.0}}
                                 {{$batteryColor = "#eab308"}}
-                            {{else if ge $percentage 20.0}}
+                            {{else if ge $percentage 15.0}}
                                 {{$batteryColor = "#f97316"}}
                             {{end}}
                             
@@ -148,11 +148,11 @@
                             </div>
                             <div class="text-xs text-gray-600 mt-1">
                                 <span>Pozostało około {{printf "%.0f" $percentage}}%</span>
-                                {{if ge $percentage 70.0}}
+                                {{if ge $percentage 60.0}}
                                     <span class="ml-2 text-green-700">Stan dobry</span>
-                                {{else if ge $percentage 40.0}}
+                                {{else if ge $percentage 30.0}}
                                     <span class="ml-2 text-yellow-700">Stan średni</span>
-                                {{else if ge $percentage 20.0}}
+                                {{else if ge $percentage 15.0}}
                                     <span class="ml-2 text-orange-700">Stan niski</span>
                                 {{else}}
                                     <span class="ml-2 text-red-700">Stan krytyczny</span>
