@@ -147,11 +147,7 @@
                             {{$batteryState := "Stan krytyczny"}}
                             {{$stateColor := "text-red-700"}}
                             
-                            {{if ge $batVoltage 4.0}}
-                                {{$batteryColor = "#059669"}}
-                                {{$batteryState = "Stan wysoki"}}
-                                {{$stateColor = "text-emerald-700"}}
-                            {{else if ge $exact_percentage 60.0}}
+                            {{if ge $exact_percentage 60.0}}
                                 {{$batteryColor = "#22c55e"}}
                                 {{$batteryState = "Stan dobry"}}
                                 {{$stateColor = "text-green-700"}}
