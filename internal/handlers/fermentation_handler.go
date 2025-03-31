@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"text/template"
 
 	"github.com/gin-gonic/gin"
 	"ispindel.piwo.org/internal/models"
@@ -452,6 +453,25 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		rssi = append(rssi, m.RSSI)
 	}
 
+	// Dodaj funkcje pomocnicze do obliczeń
+	funcMap := template.FuncMap{
+		"add": func(a, b float64) float64 {
+			return a + b
+		},
+		"subtract": func(a, b float64) float64 {
+			return a - b
+		},
+		"multiply": func(a, b float64) float64 {
+			return a * b
+		},
+		"divide": func(a, b float64) float64 {
+			if b == 0 {
+				return 0
+			}
+			return a / b
+		},
+	}
+
 	// Przygotuj dane do szablonu
 	c.HTML(http.StatusOK, "fermentation_details.html", gin.H{
 		"user":          userModel,
@@ -469,21 +489,7 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		"initialValues": initialValues,
 		"currentValues": currentValues,
 		"canDelete":     !fermentation.IsActive || len(allMeasurements) == 0, // Można usunąć jeśli zakończona lub bez pomiarów
-		"add": func(a, b float64) float64 {
-			return a + b
-		},
-		"subtract": func(a, b float64) float64 {
-			return a - b
-		},
-		"multiply": func(a, b float64) float64 {
-			return a * b
-		},
-		"divide": func(a, b float64) float64 {
-			if b == 0 {
-				return 0
-			}
-			return a / b
-		},
+		"funcMap":       funcMap,
 	})
 }
 
