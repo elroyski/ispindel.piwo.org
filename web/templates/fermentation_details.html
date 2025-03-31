@@ -120,7 +120,6 @@
                     </div>
                     <div class="text-lg text-cyan-800 mb-2">
                         {{if .currentValues}}
-                            {{$batVoltage := 0.0}}
                             {{if .measurements}}
                                 {{/* Pobierz napięcie baterii z ostatniego pomiaru na liście */}}
                                 {{$batVoltage = (index .measurements 0).Battery}}
@@ -148,7 +147,11 @@
                             {{$batteryState := "Stan krytyczny"}}
                             {{$stateColor := "text-red-700"}}
                             
-                            {{if ge $exact_percentage 60.0}}
+                            {{if ge $batVoltage 4.0}}
+                                {{$batteryColor = "#059669"}}
+                                {{$batteryState = "Stan wysoki"}}
+                                {{$stateColor = "text-emerald-700"}}
+                            {{else if ge $exact_percentage 60.0}}
                                 {{$batteryColor = "#22c55e"}}
                                 {{$batteryState = "Stan dobry"}}
                                 {{$stateColor = "text-green-700"}}
