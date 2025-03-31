@@ -469,6 +469,21 @@ func (h *FermentationHandler) FermentationDetails(c *gin.Context) {
 		"initialValues": initialValues,
 		"currentValues": currentValues,
 		"canDelete":     !fermentation.IsActive || len(allMeasurements) == 0, // Można usunąć jeśli zakończona lub bez pomiarów
+		"add": func(a, b float64) float64 {
+			return a + b
+		},
+		"subtract": func(a, b float64) float64 {
+			return a - b
+		},
+		"multiply": func(a, b float64) float64 {
+			return a * b
+		},
+		"divide": func(a, b float64) float64 {
+			if b == 0 {
+				return 0
+			}
+			return a / b
+		},
 	})
 }
 
