@@ -64,9 +64,12 @@
                     <div class="bg-amber-100 rounded-lg p-4">
                         <div class="flex items-center mb-2">
                             <i class="fas fa-clock text-amber-500 mr-2"></i>
-                            <span class="text-amber-700">Czas trwania</span>
+                            <span class="text-amber-700">{{if .fermentation.EndedAt}}Zakończona{{else}}Czas trwania{{end}}</span>
                         </div>
-                        <div class="text-2xl font-bold text-amber-800">{{.duration}}</div>
+                        <div class="text-2xl font-bold text-amber-800">{{if .fermentation.EndedAt}}{{.fermentation.EndedAt.Format "02.01.2006 15:04"}}{{else}}{{.duration}}{{end}}</div>
+                        {{if .fermentation.EndedAt}}
+                        <div class="text-sm text-amber-600">Trwała: {{.duration}}</div>
+                        {{end}}
                     </div>
 
                     <!-- Startowe wartości -->
