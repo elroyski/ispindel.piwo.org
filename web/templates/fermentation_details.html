@@ -120,6 +120,7 @@
                     </div>
                     <div class="text-lg text-cyan-800 mb-2">
                         {{if .currentValues}}
+                            {{$batVoltage := 0.0}}
                             {{if .measurements}}
                                 {{/* Pobierz napięcie baterii z ostatniego pomiaru na liście */}}
                                 {{$batVoltage = (index .measurements 0).Battery}}
