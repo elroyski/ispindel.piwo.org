@@ -177,7 +177,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                     </svg>
-                                    <span class="font-medium">Odfer. pozorne</span>
+                                    <span class="font-medium">Odfermentowania pozorne</span>
                                 </div>
                                 <p class="text-3xl font-bold text-purple-600">{{printf "%.1f" (multiply (divide (subtract .initialValues.gravity .currentValues.gravity) .initialValues.gravity) 100)}}%</p>
                                 <p class="text-sm text-gray-600">pozorne</p>
@@ -187,7 +187,7 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                     </svg>
-                                    <span class="font-medium">Odfer. rzeczywiste</span>
+                                    <span class="font-medium">Odfermentowania rzeczywiste</span>
                                 </div>
                                 <p class="text-3xl font-bold text-indigo-600">{{printf "%.1f" (multiply (divide (subtract .initialValues.gravity (add (multiply .initialValues.gravity 0.1808) (multiply .currentValues.gravity 0.8192))) .initialValues.gravity) 100)}}%</p>
                                 <p class="text-sm text-gray-600">rzeczywiste</p>
