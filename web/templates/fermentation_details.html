@@ -164,9 +164,7 @@
                             {{end}}
                             
                             <div class="flex items-center">
-                                <div class="text-2xl font-bold mr-3">{{printf "%.2f" $batVoltage}}V</div>
-                                <div class="text-sm ml-1">({{printf "%.2f" $actualV}}V)</div>
-                                <div class="text-xs text-gray-500 ml-2">LDO: {{printf "%.2f" $ldoDropV}}V</div>
+                                <div class="text-2xl font-bold mr-3">{{printf "%.2f" $actualV}}V</div>
                             </div>
                             
                             {{$batteryColor := "#ef4444"}}
