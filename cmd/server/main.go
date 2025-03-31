@@ -32,7 +32,7 @@ func main() {
 	// Inicjalizacja routera Gin
 	r := gin.Default()
 
-	// Dodanie funkcji do konwersji danych na JSON i obliczeń
+	// Dodanie funkcji do konwersji danych na JSON
 	r.SetFuncMap(template.FuncMap{
 		"jsonify": func(v interface{}) template.JS {
 			a, _ := json.Marshal(v)
