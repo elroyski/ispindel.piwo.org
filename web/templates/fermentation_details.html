@@ -133,7 +133,7 @@
                             {{end}}
                             {{$maxV := 4.2}}
                             {{$minV := 3.0}}
-                            {{$actualV := (subtract $batVoltage $ldoDropV)}}
+                            {{$actualV := $batVoltage}}
                             
                             {{/* Obliczanie procentu naładowania według krzywej rozładowania */}}
                             {{$exact_percentage := 0.0}}
@@ -164,7 +164,7 @@
                             {{end}}
                             
                             <div class="flex items-center">
-                                <div class="text-2xl font-bold mr-3">{{printf "%.2f" $actualV}}V</div>
+                                <div class="text-2xl font-bold mr-3">{{printf "%.2f" $batVoltage}}V</div>
                             </div>
                             
                             {{$batteryColor := "#ef4444"}}
