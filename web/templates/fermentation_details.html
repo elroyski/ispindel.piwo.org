@@ -134,9 +134,34 @@
                             {{$maxV := 4.2}}
                             {{$minV := 3.0}}
                             {{$actualV := (subtract $batVoltage $ldoDropV)}}
-                            {{$exact_percentage := multiply (divide (subtract $actualV $minV) (subtract $maxV $minV)) 100}}
-                            {{if gt $exact_percentage 100.0}}{{$exact_percentage = 100.0}}{{end}}
-                            {{if lt $exact_percentage 0.0}}{{$exact_percentage = 0.0}}{{end}}
+                            
+                            {{/* Obliczanie procentu naładowania według krzywej rozładowania */}}
+                            {{$exact_percentage := 0.0}}
+                            {{if ge $actualV 4.2}}
+                                {{$exact_percentage = 100.0}}
+                            {{else if ge $actualV 4.1}}
+                                {{$exact_percentage = 90.0 | add (multiply (divide (subtract $actualV 4.1) 0.1) 10.0)}}
+                            {{else if ge $actualV 4.0}}
+                                {{$exact_percentage = 80.0 | add (multiply (divide (subtract $actualV 4.0) 0.1) 10.0)}}
+                            {{else if ge $actualV 3.9}}
+                                {{$exact_percentage = 70.0 | add (multiply (divide (subtract $actualV 3.9) 0.1) 10.0)}}
+                            {{else if ge $actualV 3.8}}
+                                {{$exact_percentage = 60.0 | add (multiply (divide (subtract $actualV 3.8) 0.1) 10.0)}}
+                            {{else if ge $actualV 3.7}}
+                                {{$exact_percentage = 50.0 | add (multiply (divide (subtract $actualV 3.7) 0.1) 10.0)}}
+                            {{else if ge $actualV 3.6}}
+                                {{$exact_percentage = 40.0 | add (multiply (divide (subtract $actualV 3.6) 0.1) 10.0)}}
+                            {{else if ge $actualV 3.5}}
+                                {{$exact_percentage = 30.0 | add (multiply (divide (subtract $actualV 3.5) 0.1) 10.0)}}
+                            {{else if ge $actualV 3.4}}
+                                {{$exact_percentage = 20.0 | add (multiply (divide (subtract $actualV 3.4) 0.1) 10.0)}}
+                            {{else if ge $actualV 3.3}}
+                                {{$exact_percentage = 10.0 | add (multiply (divide (subtract $actualV 3.3) 0.1) 10.0)}}
+                            {{else if ge $actualV 3.0}}
+                                {{$exact_percentage = multiply (divide (subtract $actualV 3.0) 0.3) 10.0}}
+                            {{else}}
+                                {{$exact_percentage = 0.0}}
+                            {{end}}
                             
                             <div class="flex items-center">
                                 <div class="text-2xl font-bold mr-3">{{printf "%.2f" $batVoltage}}V</div>
