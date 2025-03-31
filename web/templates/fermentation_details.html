@@ -112,11 +112,57 @@
                 <!-- Zasianie kafelek -->
                 <div class="bg-cyan-100 rounded-lg p-4 mt-4">
                     <div class="flex items-center mb-2">
-                        <i class="fas fa-seedling text-cyan-500 mr-2"></i>
-                        <span class="text-cyan-700">Zasianie</span>
+                        <i class="fas fa-battery-full text-cyan-500 mr-2"></i>
+                        <span class="text-cyan-700">Stan baterii</span>
                     </div>
-                    <div class="text-lg text-cyan-800">
-                        <!-- Tu będzie zawartość kafelka Zasianie -->
+                    <div class="text-lg text-cyan-800 mb-2">
+                        {{if .currentValues}}
+                            {{$batVoltage := 0.0}}
+                            {{if .batteries}}
+                                {{$batVoltage = index .batteries (sub (len .batteries) 1)}}
+                            {{end}}
+                            {{$ldoDropV := 0.35}}
+                            {{$maxV := 4.2}}
+                            {{$minV := 3.0}}
+                            {{$actualV := (subtract $batVoltage $ldoDropV)}}
+                            {{$percentage := multiply (divide (subtract $actualV $minV) (subtract $maxV $minV)) 100}}
+                            {{if gt $percentage 100.0}}{{$percentage = 100.0}}{{end}}
+                            {{if lt $percentage 0.0}}{{$percentage = 0.0}}{{end}}
+                            
+                            <div class="flex items-center">
+                                <div class="text-2xl font-bold mr-3">{{printf "%.2f" $batVoltage}}V</div>
+                                <div class="text-sm ml-1">({{printf "%.2f" $actualV}}V)</div>
+                            </div>
+                            
+                            <div class="w-full bg-gray-200 rounded-full h-4 mt-2">
+                                <div class="rounded-full h-4 
+                                    {{if ge $percentage 70.0}}
+                                        bg-green-500
+                                    {{else if ge $percentage 40.0}}
+                                        bg-yellow-500
+                                    {{else if ge $percentage 20.0}}
+                                        bg-orange-500
+                                    {{else}}
+                                        bg-red-500
+                                    {{end}}"
+                                    style="width: {{$percentage}}%">
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-600 mt-1">
+                                <span>Pozostało około {{printf "%.0f" $percentage}}%</span>
+                                {{if ge $percentage 70.0}}
+                                    <span class="ml-2 text-green-700">Stan dobry</span>
+                                {{else if ge $percentage 40.0}}
+                                    <span class="ml-2 text-yellow-700">Stan średni</span>
+                                {{else if ge $percentage 20.0}}
+                                    <span class="ml-2 text-orange-700">Stan niski</span>
+                                {{else}}
+                                    <span class="ml-2 text-red-700">Stan krytyczny</span>
+                                {{end}}
+                            </div>
+                        {{else}}
+                            <div class="text-gray-500">Brak danych o baterii</div>
+                        {{end}}
                     </div>
                 </div>
 
