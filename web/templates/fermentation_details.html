@@ -156,7 +156,7 @@
                                 {{$batteryColor = "#22c55e"}}
                                 {{$batteryState = "Stan dobry"}}
                                 {{$stateColor = "text-green-700"}}
-                            {{else if ge $exact_percentage 30.0}}
+                            {{else if ge $exact_percentage 25.0}}
                                 {{$batteryColor = "#eab308"}}
                                 {{$batteryState = "Stan średni"}}
                                 {{$stateColor = "text-yellow-700"}}
@@ -176,9 +176,9 @@
                             
                             <!-- Dodatkowe informacje diagnostyczne -->
                             <div class="text-xs text-gray-500 mt-2">
-                                Próg dobry: 60%, średni: 30%, niski: 15%<br>
+                                Próg dobry: 60%, średni: 25%, niski: 15%<br>
                                 Obliczony procent: {{printf "%.2f" $exact_percentage}}%<br>
-                                Czy ≥ 30%: {{ge $exact_percentage 30.0}}
+                                Czy ≥ 25%: {{ge $exact_percentage 25.0}}
                             </div>
                         {{else}}
                             <div class="text-gray-500">Brak danych o baterii</div>
