@@ -113,7 +113,7 @@
                                     </svg>
                                     <span class="font-medium">ABV</span>
                                 </div>
-                                <p class="text-2xl font-bold text-blue-600">{{printf "%.1f" (multiply (subtract .initialValues.gravity .currentValues.gravity) 0.51)}}%</p>
+                                <p class="text-3xl font-bold text-blue-600">{{printf "%.1f" (multiply (subtract .initialValues.gravity .currentValues.gravity) 0.51)}}%</p>
                                 <p class="text-sm text-gray-600">Alkohol objętościowo</p>
                             </div>
                             <div class="bg-green-50 p-4 rounded-lg">
@@ -123,7 +123,7 @@
                                     </svg>
                                     <span class="font-medium">ABW</span>
                                 </div>
-                                <p class="text-2xl font-bold text-green-600">{{printf "%.1f" (multiply (multiply (subtract .initialValues.gravity .currentValues.gravity) 0.51) 0.793)}}%</p>
+                                <p class="text-3xl font-bold text-green-600">{{printf "%.1f" (multiply (multiply (subtract .initialValues.gravity .currentValues.gravity) 0.51) 0.793)}}%</p>
                                 <p class="text-sm text-gray-600">Alkohol wagowo</p>
                             </div>
                             <div class="bg-yellow-50 p-4 rounded-lg">
@@ -133,8 +133,8 @@
                                     </svg>
                                     <span class="font-medium">RE</span>
                                 </div>
-                                <p class="text-2xl font-bold text-yellow-600">{{printf "%.2f" (add (multiply .initialValues.gravity 0.1808) (multiply .currentValues.gravity 0.8192))}}°Blg</p>
-                                <p class="text-sm text-gray-600">Rzeczywisty ekstrakt końcowy</p>
+                                <p class="text-3xl font-bold text-yellow-600">{{printf "%.2f" (add (multiply .initialValues.gravity 0.1808) (multiply .currentValues.gravity 0.8192))}}°Blg</p>
+                                <p class="text-sm text-gray-600">Rzeczywisty ekstrakt</p>
                             </div>
                             <div class="bg-red-50 p-4 rounded-lg">
                                 <div class="flex items-center mb-2">
@@ -143,11 +143,11 @@
                                     </svg>
                                     <span class="font-medium">Kalorie</span>
                                 </div>
-                                <p class="text-2xl font-bold text-red-600">{{printf "%.0f" (add (multiply (multiply (subtract .initialValues.gravity .currentValues.gravity) 0.51) 7.1) (multiply (add (multiply .initialValues.gravity 0.1808) (multiply .currentValues.gravity 0.8192)) 4.0))}} kcal</p>
+                                <p class="text-3xl font-bold text-red-600">{{printf "%.0f" (add (multiply (multiply (subtract .initialValues.gravity .currentValues.gravity) 0.51) 7.1) (multiply (add (multiply .initialValues.gravity 0.1808) (multiply .currentValues.gravity 0.8192)) 4.0))}} kcal</p>
                                 <p class="text-sm text-gray-600">na 100 ml</p>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                             <div class="bg-orange-50 p-4 rounded-lg">
                                 <div class="flex items-center mb-2">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-orange-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -173,9 +173,9 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                     </svg>
-                                    <span class="font-medium">Odfermentowanie</span>
+                                    <span class="font-medium">Odfer. pozorne</span>
                                 </div>
-                                <p class="text-2xl font-bold text-purple-600">{{printf "%.1f" (multiply (divide (subtract .initialValues.gravity .currentValues.gravity) .initialValues.gravity) 100)}}%</p>
+                                <p class="text-3xl font-bold text-purple-600">{{printf "%.1f" (multiply (divide (subtract .initialValues.gravity .currentValues.gravity) .initialValues.gravity) 100)}}%</p>
                                 <p class="text-sm text-gray-600">pozorne</p>
                             </div>
                             <div class="bg-indigo-50 p-4 rounded-lg">
@@ -183,9 +183,9 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                                     </svg>
-                                    <span class="font-medium">Odfermentowanie</span>
+                                    <span class="font-medium">Odfer. rzeczywiste</span>
                                 </div>
-                                <p class="text-2xl font-bold text-indigo-600">{{printf "%.1f" (multiply (divide (subtract .initialValues.gravity (add (multiply .initialValues.gravity 0.1808) (multiply .currentValues.gravity 0.8192))) .initialValues.gravity) 100)}}%</p>
+                                <p class="text-3xl font-bold text-indigo-600">{{printf "%.1f" (multiply (divide (subtract .initialValues.gravity (add (multiply .initialValues.gravity 0.1808) (multiply .currentValues.gravity 0.8192))) .initialValues.gravity) 100)}}%</p>
                                 <p class="text-sm text-gray-600">rzeczywiste</p>
                             </div>
                         </div>
