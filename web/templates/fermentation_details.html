@@ -152,11 +152,12 @@
                             </div>
                             <div class="text-xs text-gray-600 mt-1">
                                 <span>Pozostało około {{printf "%.0f" $percentage}}%</span>
-                                {{if ge $percentage 60.0}}
+                                {{$percentage_value := multiply (divide (subtract $actualV $minV) (subtract $maxV $minV)) 100}}
+                                {{if ge $percentage_value 60.0}}
                                     <span class="ml-2 text-green-700">Stan dobry</span>
-                                {{else if ge $percentage 30.0}}
+                                {{else if ge $percentage_value 30.0}}
                                     <span class="ml-2 text-yellow-700">Stan średni</span>
-                                {{else if ge $percentage 15.0}}
+                                {{else if ge $percentage_value 15.0}}
                                     <span class="ml-2 text-orange-700">Stan niski</span>
                                 {{else}}
                                     <span class="ml-2 text-red-700">Stan krytyczny</span>
