@@ -6,6 +6,7 @@ import (
 
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/internal/services"
+	"ispindel.piwo.org/pkg/database"
 
 	"github.com/gin-gonic/gin"
 )
@@ -194,4 +195,44 @@ func (h *AdminHandler) ListFermentations(c *gin.Context) {
 		"fermentations": fermentations,
 		"isAdmin":       true,
 	})
+}
+
+// AdminDeleteIspindel umożliwia administratorowi usunięcie urządzenia iSpindel
+func (h *AdminHandler) AdminDeleteIspindel(c *gin.Context) {
+	user, _ := c.Get("user")
+	userModel := user.(*models.User)
+
+	// Sprawdź czy użytkownik jest administratorem
+	if userModel.Email != h.AdminEmail {
+		c.HTML(http.StatusForbidden, "error.html", gin.H{
+			"error": "Brak uprawnień administratora",
+			"user":  userModel,
+		})
+		return
+	}
+
+	// Pobierz ID urządzenia z parametrów URL
+	ispindelIDStr := c.Param("id")
+	ispindelID, err := strconv.ParseUint(ispindelIDStr, 10, 64)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "error.html", gin.H{
+			"error":   "Nieprawidłowy identyfikator urządzenia",
+			"user":    userModel,
+			"isAdmin": true,
+		})
+		return
+	}
+
+	// Usuń urządzenie z bazy danych (bezpośrednio, bez sprawdzania właściciela)
+	if err := database.DB.Where("id = ?", ispindelID).Delete(&models.Ispindel{}).Error; err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
+			"error":   "Nie udało się usunąć urządzenia: " + err.Error(),
+			"user":    userModel,
+			"isAdmin": true,
+		})
+		return
+	}
+
+	// Przekieruj z powrotem do listy urządzeń
+	c.Redirect(http.StatusSeeOther, "/admin/ispindels")
 }

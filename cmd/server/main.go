@@ -223,6 +223,7 @@ func main() {
 		adminGroup.GET("/users/:id", adminHandler.UserDetails)
 		adminGroup.GET("/ispindels", adminHandler.ListIspindels)
 		adminGroup.GET("/fermentations", adminHandler.ListFermentations)
+		adminGroup.POST("/ispindels/:id/delete", adminHandler.AdminDeleteIspindel)
 	}
 
 	// Pobierz port z zmiennej środowiskowej lub ustaw domyślną wartość

@@ -39,6 +39,7 @@
                             <th class="py-3 px-6 text-left">Ostatnio widziane</th>
                             <th class="py-3 px-6 text-center">Status</th>
                             <th class="py-3 px-6 text-center">Device ID</th>
+                            <th class="py-3 px-6 text-center">Akcje</th>
                         </tr>
                     </thead>
                     <tbody class="text-gray-600 text-sm">
@@ -69,10 +70,17 @@
                                     -
                                 {{end}}
                             </td>
+                            <td class="py-3 px-6 text-center">
+                                <form action="/admin/ispindels/{{.ID}}/delete" method="POST" onsubmit="return confirm('Czy na pewno chcesz usunąć to urządzenie? Ta operacja jest nieodwracalna.');">
+                                    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded text-xs">
+                                        Usuń
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                         {{else}}
                         <tr class="border-b border-gray-200">
-                            <td colspan="7" class="py-3 px-6 text-center">Brak zarejestrowanych urządzeń iSpindel</td>
+                            <td colspan="8" class="py-3 px-6 text-center">Brak zarejestrowanych urządzeń iSpindel</td>
                         </tr>
                         {{end}}
                     </tbody>
