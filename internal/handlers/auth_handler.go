@@ -115,8 +115,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	// Ustaw token w ciasteczku
 	c.SetCookie("token", token, 3600*24, "/", "", false, true)
 
-	// Przekieruj do strony głównej
-	c.Redirect(http.StatusSeeOther, "/")
+	// Przekieruj do dashboard
+	c.Redirect(http.StatusSeeOther, "/dashboard")
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
