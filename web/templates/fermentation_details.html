@@ -204,8 +204,33 @@
                         <i class="fas fa-info-circle text-gray-500 mr-2"></i>
                         <span class="text-gray-700">Dodatkowe informacje</span>
                     </div>
-                    <div class="text-gray-800">{{.fermentation.Description}}</div>
+                    <div class="text-gray-800" id="fermentationDescription" data-description="{{.fermentation.Description}}">
+                        {{.fermentation.Description}}
+                    </div>
                 </div>
+
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const descElement = document.getElementById('fermentationDescription');
+                        if (descElement) {
+                            const description = descElement.getAttribute('data-description');
+                            const zakonczonoText = "Zakończono - urządzenie pomiarowe zostało usunięte";
+                            const zakonczonoAdminText = "Zakończono - urządzenie pomiarowe zostało usunięte przez administratora";
+                            
+                            if (description.includes(zakonczonoAdminText)) {
+                                const parts = description.split(zakonczonoAdminText);
+                                descElement.innerHTML = parts[0] + (parts[0] ? '<br>' : '') + 
+                                    '<strong class="text-red-600">' + zakonczonoAdminText + '</strong>' + 
+                                    (parts[1] ? parts[1] : '');
+                            } else if (description.includes(zakonczonoText)) {
+                                const parts = description.split(zakonczonoText);
+                                descElement.innerHTML = parts[0] + (parts[0] ? '<br>' : '') + 
+                                    '<strong class="text-red-600">' + zakonczonoText + '</strong>' + 
+                                    (parts[1] ? parts[1] : '');
+                            }
+                        }
+                    });
+                </script>
                 {{end}}
 
                 {{if .fermentation.IsActive}}
