@@ -170,16 +170,10 @@ func main() {
 
 	// Strona główna
 	r.GET("/", func(c *gin.Context) {
-		user, exists := c.Get("user")
+		_, exists := c.Get("user")
 		if exists {
-			// Sprawdź, czy użytkownik jest administratorem
-			userModel := user.(*models.User)
-			isAdmin := userModel.Email == adminHandler.AdminEmail
-
-			c.HTML(http.StatusOK, "index.html", gin.H{
-				"user":    userModel,
-				"isAdmin": isAdmin,
-			})
+			// Przekieruj zalogowanego użytkownika do dashboard
+			c.Redirect(http.StatusSeeOther, "/dashboard")
 			return
 		}
 		c.HTML(http.StatusOK, "index.html", nil)
