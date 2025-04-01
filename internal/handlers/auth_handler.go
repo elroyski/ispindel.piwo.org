@@ -324,6 +324,7 @@ func (h *AuthHandler) PiwoCallback(c *gin.Context) {
 			// Połącz istniejące konto z piwo.org
 			user.PiwoID = userInfo.ID
 			user.Picture = userInfo.Picture
+			user.IsActive = true // Zawsze aktywuj konto po logowaniu przez piwo.org
 			if err := h.userService.UpdateUser(user); err != nil {
 				c.HTML(http.StatusInternalServerError, "login.html", gin.H{
 					"error": "Nie udało się połączyć konta z piwo.org",
