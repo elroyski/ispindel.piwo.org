@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"text/template"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"ispindel.piwo.org/internal/models"
@@ -571,6 +572,9 @@ func (h *FermentationHandler) ShowCharts(c *gin.Context) {
 		return
 	}
 
+	// Pobierz parametr okresu, domyślnie "all"
+	period := c.DefaultQuery("period", "all")
+
 	// Pobierz użytkownika z kontekstu
 	user, exists := c.Get("user")
 	if !exists {
@@ -602,6 +606,34 @@ func (h *FermentationHandler) ShowCharts(c *gin.Context) {
 	// Sortuj pomiary chronologicznie (od najstarszych do najnowszych)
 	services.SortMeasurementsChronologically(measurements)
 
+	// Filtruj pomiary w zależności od wybranego okresu
+	var filteredMeasurements []models.Measurement
+	if period != "all" && len(measurements) > 0 {
+		// Oblicz datę początkową na podstawie wybranego okresu
+		now := time.Now()
+		var startDate time.Time
+
+		switch period {
+		case "1d":
+			startDate = now.AddDate(0, 0, -1)
+		case "3d":
+			startDate = now.AddDate(0, 0, -3)
+		case "7d":
+			startDate = now.AddDate(0, 0, -7)
+		default:
+			startDate = time.Time{} // Jeśli nieznany okres, domyślnie wszystkie dane
+		}
+
+		// Filtruj pomiary nowsze niż startDate
+		for _, m := range measurements {
+			if m.Timestamp.After(startDate) || m.Timestamp.Equal(startDate) {
+				filteredMeasurements = append(filteredMeasurements, m)
+			}
+		}
+	} else {
+		filteredMeasurements = measurements
+	}
+
 	// Przygotuj dane do wykresów
 	var timestamps []string
 	var temperatures []float64
@@ -610,7 +642,7 @@ func (h *FermentationHandler) ShowCharts(c *gin.Context) {
 	var angles []float64
 	var rssi []int
 
-	for _, m := range measurements {
+	for _, m := range filteredMeasurements {
 		timestamps = append(timestamps, m.Timestamp.Format("02.01.2006 15:04"))
 		temperatures = append(temperatures, m.Temperature)
 		gravities = append(gravities, m.Gravity)
@@ -623,12 +655,13 @@ func (h *FermentationHandler) ShowCharts(c *gin.Context) {
 	c.HTML(http.StatusOK, "fermentation_charts.html", gin.H{
 		"user":         userModel,
 		"fermentation": fermentation,
-		"hasData":      len(measurements) > 0,
+		"hasData":      len(filteredMeasurements) > 0,
 		"timestamps":   timestamps,
 		"temperatures": temperatures,
 		"gravities":    gravities,
 		"batteries":    batteries,
 		"angles":       angles,
 		"rssi":         rssi,
+		"period":       period, // Dodajemy okres do kontekstu szablonu
 	})
 }

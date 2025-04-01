@@ -39,6 +39,28 @@
         </div>
 
         {{if .hasData}}
+        <!-- Przyciski filtrowania danych -->
+        <div class="mb-6">
+            <div class="bg-white rounded-lg shadow-md p-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-gray-700 font-medium">Filtruj dane:</span>
+                    <div class="flex space-x-2">
+                        <a href="/fermentations/{{.fermentation.ID}}/charts?period=1d" class="px-4 py-2 rounded-md {{ if eq .period "1d" }}bg-blue-600 text-white{{ else }}bg-gray-200 text-gray-800 hover:bg-gray-300{{ end }}">
+                            1 dzień
+                        </a>
+                        <a href="/fermentations/{{.fermentation.ID}}/charts?period=3d" class="px-4 py-2 rounded-md {{ if eq .period "3d" }}bg-blue-600 text-white{{ else }}bg-gray-200 text-gray-800 hover:bg-gray-300{{ end }}">
+                            3 dni
+                        </a>
+                        <a href="/fermentations/{{.fermentation.ID}}/charts?period=7d" class="px-4 py-2 rounded-md {{ if eq .period "7d" }}bg-blue-600 text-white{{ else }}bg-gray-200 text-gray-800 hover:bg-gray-300{{ end }}">
+                            7 dni
+                        </a>
+                        <a href="/fermentations/{{.fermentation.ID}}/charts?period=all" class="px-4 py-2 rounded-md {{ if or (eq .period "all") (eq .period "") }}bg-blue-600 text-white{{ else }}bg-gray-200 text-gray-800 hover:bg-gray-300{{ end }}">
+                            Cały okres
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="space-y-8">
             <!-- Wykres temperatury -->
             <div class="bg-white rounded-lg shadow-md p-6">
