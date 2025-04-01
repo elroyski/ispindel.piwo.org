@@ -38,6 +38,7 @@
                             <th class="py-3 px-6 text-left">Data rejestracji</th>
                             <th class="py-3 px-6 text-left">Ostatnie logowanie</th>
                             <th class="py-3 px-6 text-center">Status</th>
+                            <th class="py-3 px-6 text-center">Typ konta</th>
                             <th class="py-3 px-6 text-center">Akcje</th>
                         </tr>
                     </thead>
@@ -63,6 +64,15 @@
                                 {{end}}
                             </td>
                             <td class="py-3 px-6 text-center">
+                                {{if ne .GoogleID ""}}
+                                    <span class="bg-blue-200 text-blue-700 py-1 px-3 rounded-full text-xs">Google</span>
+                                {{else if ne .PiwoID 0}}
+                                    <span class="bg-yellow-200 text-yellow-700 py-1 px-3 rounded-full text-xs">piwo.org</span>
+                                {{else}}
+                                    <span class="bg-gray-200 text-gray-700 py-1 px-3 rounded-full text-xs">Email</span>
+                                {{end}}
+                            </td>
+                            <td class="py-3 px-6 text-center">
                                 <a href="/admin/users/{{.ID}}" class="text-blue-600 hover:text-blue-900 mr-2">
                                     <i class="fas fa-eye"></i>
                                 </a>
@@ -70,7 +80,7 @@
                         </tr>
                         {{else}}
                         <tr class="border-b border-gray-200">
-                            <td colspan="7" class="py-3 px-6 text-center">Brak zarejestrowanych użytkowników</td>
+                            <td colspan="8" class="py-3 px-6 text-center">Brak zarejestrowanych użytkowników</td>
                         </tr>
                         {{end}}
                     </tbody>
