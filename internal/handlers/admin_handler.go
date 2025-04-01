@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/internal/services"
@@ -223,10 +224,74 @@ func (h *AdminHandler) AdminDeleteIspindel(c *gin.Context) {
 		return
 	}
 
-	// Usuń urządzenie z bazy danych (bezpośrednio, bez sprawdzania właściciela)
-	if err := database.DB.Where("id = ?", ispindelID).Delete(&models.Ispindel{}).Error; err != nil {
+	// Znajdź urządzenie
+	var ispindel models.Ispindel
+	if err := database.DB.First(&ispindel, ispindelID).Error; err != nil {
+		c.HTML(http.StatusNotFound, "error.html", gin.H{
+			"error":   "Urządzenie nie znalezione: " + err.Error(),
+			"user":    userModel,
+			"isAdmin": true,
+		})
+		return
+	}
+
+	// Rozpocznij transakcję
+	tx := database.DB.Begin()
+
+	// Znajdź wszystkie aktywne fermentacje dla tego urządzenia (bez względu na właściciela)
+	var fermentations []models.Fermentation
+	id := uint(ispindelID)
+	if err := tx.Where("ispindel_id = ? AND is_active = true", &id).Find(&fermentations).Error; err != nil {
+		tx.Rollback()
+		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
+			"error":   "Błąd podczas pobierania fermentacji: " + err.Error(),
+			"user":    userModel,
+			"isAdmin": true,
+		})
+		return
+	}
+
+	// Zakończ wszystkie aktywne fermentacje
+	for _, fermentation := range fermentations {
+		now := time.Now()
+		fermentation.EndedAt = &now
+		fermentation.IsActive = false
+		fermentation.IspindelID = nil // Usuń powiązanie z urządzeniem
+
+		// Dodaj komentarz o usunięciu urządzenia
+		comment := "Zakończono - urządzenie pomiarowe zostało usunięte przez administratora"
+		if fermentation.Description != "" {
+			fermentation.Description = fermentation.Description + "\n\n" + comment
+		} else {
+			fermentation.Description = comment
+		}
+
+		if err := tx.Save(&fermentation).Error; err != nil {
+			tx.Rollback()
+			c.HTML(http.StatusInternalServerError, "error.html", gin.H{
+				"error":   "Błąd podczas aktualizacji fermentacji: " + err.Error(),
+				"user":    userModel,
+				"isAdmin": true,
+			})
+			return
+		}
+	}
+
+	// Usuń urządzenie
+	if err := tx.Delete(&ispindel).Error; err != nil {
+		tx.Rollback()
 		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
 			"error":   "Nie udało się usunąć urządzenia: " + err.Error(),
+			"user":    userModel,
+			"isAdmin": true,
+		})
+		return
+	}
+
+	// Zatwierdź transakcję
+	if err := tx.Commit().Error; err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
+			"error":   "Błąd podczas zatwierdzania transakcji: " + err.Error(),
 			"user":    userModel,
 			"isAdmin": true,
 		})
