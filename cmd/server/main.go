@@ -215,15 +215,16 @@ func main() {
 	}
 
 	// Panel administratora (tylko dla administratora)
-	adminGroup := r.Group("/admin")
-	adminGroup.Use(adminHandler.AdminRequired())
+	admin := r.Group("/admin")
+	admin.Use(adminHandler.AdminRequired())
 	{
-		adminGroup.GET("", adminHandler.Dashboard)
-		adminGroup.GET("/users", adminHandler.ListUsers)
-		adminGroup.GET("/users/:id", adminHandler.UserDetails)
-		adminGroup.GET("/ispindels", adminHandler.ListIspindels)
-		adminGroup.GET("/fermentations", adminHandler.ListFermentations)
-		adminGroup.POST("/ispindels/:id/delete", adminHandler.AdminDeleteIspindel)
+		admin.GET("", adminHandler.Dashboard)
+		admin.GET("/users", adminHandler.ListUsers)
+		admin.GET("/users/:id", adminHandler.UserDetails)
+		admin.GET("/ispindels", adminHandler.ListIspindels)
+		admin.GET("/fermentations", adminHandler.ListFermentations)
+		admin.POST("/ispindels/:id/delete", adminHandler.AdminDeleteIspindel)
+		admin.POST("/users/:id/delete", adminHandler.AdminDeleteUser)
 	}
 
 	// Pobierz port z zmiennej środowiskowej lub ustaw domyślną wartość

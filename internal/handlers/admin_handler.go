@@ -301,3 +301,63 @@ func (h *AdminHandler) AdminDeleteIspindel(c *gin.Context) {
 	// Przekieruj z powrotem do listy urządzeń
 	c.Redirect(http.StatusSeeOther, "/admin/ispindels")
 }
+
+// AdminDeleteUser umożliwia administratorowi usunięcie konta użytkownika
+func (h *AdminHandler) AdminDeleteUser(c *gin.Context) {
+	user, _ := c.Get("user")
+	userModel := user.(*models.User)
+
+	// Sprawdź czy użytkownik jest administratorem
+	if userModel.Email != h.AdminEmail {
+		c.HTML(http.StatusForbidden, "error.html", gin.H{
+			"error": "Brak uprawnień administratora",
+			"user":  userModel,
+		})
+		return
+	}
+
+	// Pobierz ID użytkownika z parametrów URL
+	userIDStr := c.Param("id")
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		c.HTML(http.StatusBadRequest, "error.html", gin.H{
+			"error":   "Nieprawidłowy identyfikator użytkownika",
+			"user":    userModel,
+			"isAdmin": true,
+		})
+		return
+	}
+
+	// Nie pozwól na usunięcie konta administratora
+	targetUser, err := h.UserService.GetUserByID(uint(userID))
+	if err != nil {
+		c.HTML(http.StatusNotFound, "error.html", gin.H{
+			"error":   "Użytkownik nie znaleziony: " + err.Error(),
+			"user":    userModel,
+			"isAdmin": true,
+		})
+		return
+	}
+
+	if targetUser.Email == h.AdminEmail {
+		c.HTML(http.StatusBadRequest, "error.html", gin.H{
+			"error":   "Nie można usunąć konta administratora",
+			"user":    userModel,
+			"isAdmin": true,
+		})
+		return
+	}
+
+	// Usuń konto użytkownika
+	if err := h.UserService.DeleteUser(userID); err != nil {
+		c.HTML(http.StatusInternalServerError, "error.html", gin.H{
+			"error":   "Nie udało się usunąć konta: " + err.Error(),
+			"user":    userModel,
+			"isAdmin": true,
+		})
+		return
+	}
+
+	// Przekieruj z powrotem do listy użytkowników
+	c.Redirect(http.StatusSeeOther, "/admin/users")
+}
