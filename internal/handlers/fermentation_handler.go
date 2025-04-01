@@ -572,8 +572,8 @@ func (h *FermentationHandler) ShowCharts(c *gin.Context) {
 		return
 	}
 
-	// Pobierz parametr okresu, domyślnie "all"
-	period := c.DefaultQuery("period", "all")
+	// Pobierz parametr okresu, domyślnie "7d"
+	period := c.DefaultQuery("period", "7d")
 
 	// Pobierz użytkownika z kontekstu
 	user, exists := c.Get("user")
