@@ -192,8 +192,14 @@ func main() {
 			c.Redirect(http.StatusSeeOther, "/auth/login")
 			return
 		}
+
+		// Sprawdzenie czy użytkownik jest administratorem
+		userModel := user.(*models.User)
+		isAdmin := userModel.Email == adminHandler.AdminEmail
+
 		c.HTML(http.StatusOK, "dashboard.html", gin.H{
-			"user": user,
+			"user":    user,
+			"isAdmin": isAdmin,
 		})
 	})
 

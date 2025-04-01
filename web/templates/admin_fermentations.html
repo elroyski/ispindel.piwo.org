@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fermentacje - Panel Administratora - iSpindel.piwo.org</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a class="font-bold text-xl" href="/">iSpindel</a>
+            <div class="flex items-center space-x-4">
+                <span>Witaj, {{.user.Name}}!</span>
+                <a href="/admin" class="bg-yellow-600 px-2 py-1 rounded text-sm">Panel Admina</a>
+                <a href="/auth/logout" class="hover:text-blue-200">Wyloguj</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold">Fermentacje w systemie</h1>
+            <a href="/admin" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-md text-sm">
+                &larr; Powrót do panelu
+            </a>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                            <th class="py-3 px-6 text-left">ID</th>
+                            <th class="py-3 px-6 text-left">Nazwa</th>
+                            <th class="py-3 px-6 text-left">Użytkownik</th>
+                            <th class="py-3 px-6 text-left">Styl</th>
+                            <th class="py-3 px-6 text-left">Data rozpoczęcia</th>
+                            <th class="py-3 px-6 text-left">Data zakończenia</th>
+                            <th class="py-3 px-6 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600 text-sm">
+                        {{range .fermentations}}
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="py-3 px-6 text-left whitespace-nowrap">{{.ID}}</td>
+                            <td class="py-3 px-6 text-left">{{.Name}}</td>
+                            <td class="py-3 px-6 text-left">{{.UserID}}</td>
+                            <td class="py-3 px-6 text-left">
+                                {{if .Style}}
+                                    {{if ne .StyleID "OWN"}}
+                                        <span class="text-xs text-gray-500">[{{.StyleID}}]</span>
+                                    {{end}}
+                                    {{.Style}}
+                                {{else}}
+                                    -
+                                {{end}}
+                            </td>
+                            <td class="py-3 px-6 text-left">{{.StartedAt.Format "2006-01-02 15:04"}}</td>
+                            <td class="py-3 px-6 text-left">
+                                {{if .EndedAt}}
+                                    {{.EndedAt.Format "2006-01-02 15:04"}}
+                                {{else}}
+                                    -
+                                {{end}}
+                            </td>
+                            <td class="py-3 px-6 text-center">
+                                {{if .IsActive}}
+                                    <span class="bg-green-200 text-green-700 py-1 px-3 rounded-full text-xs">Aktywna</span>
+                                {{else}}
+                                    <span class="bg-red-200 text-red-700 py-1 px-3 rounded-full text-xs">Zakończona</span>
+                                {{end}}
+                            </td>
+                        </tr>
+                        {{else}}
+                        <tr class="border-b border-gray-200">
+                            <td colspan="7" class="py-3 px-6 text-center">Brak zarejestrowanych fermentacji</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="bg-white py-4 mt-8">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            &copy; 2025 iSpindel.piwo.org - System do monitorowania fermentacji
+        </div>
+    </footer>
+</body>
+</html> 
