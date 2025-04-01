@@ -663,5 +663,6 @@ func (h *FermentationHandler) ShowCharts(c *gin.Context) {
 		"angles":       angles,
 		"rssi":         rssi,
 		"period":       period, // Dodajemy okres do kontekstu szablonu
+		"isAdmin":      c.GetBool("isAdmin"),
 	})
 }

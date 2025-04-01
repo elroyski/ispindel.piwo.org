@@ -377,3 +377,21 @@ func (s *IspindelService) checkAndUpdateDeviceActivity(ispindelID uint) error {
 
 	return nil
 }
+
+// GetIspindelCount zwraca całkowitą liczbę urządzeń iSpindel
+func (s *IspindelService) GetIspindelCount() (int64, error) {
+	var count int64
+	if err := database.DB.Model(&models.Ispindel{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// GetAllIspindels zwraca wszystkie urządzenia iSpindel w systemie
+func (s *IspindelService) GetAllIspindels() ([]models.Ispindel, error) {
+	var ispindels []models.Ispindel
+	if err := database.DB.Order("created_at desc").Find(&ispindels).Error; err != nil {
+		return nil, err
+	}
+	return ispindels, nil
+}

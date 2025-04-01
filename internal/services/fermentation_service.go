@@ -421,3 +421,21 @@ func (s *FermentationService) GetActiveGermentationsByIspindelID(ispindelID uint
 	}
 	return fermentations, nil
 }
+
+// GetFermentationCount zwraca całkowitą liczbę fermentacji
+func (s *FermentationService) GetFermentationCount() (int64, error) {
+	var count int64
+	if err := database.DB.Model(&models.Fermentation{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// GetAllFermentations zwraca wszystkie fermentacje w systemie
+func (s *FermentationService) GetAllFermentations() ([]models.Fermentation, error) {
+	var fermentations []models.Fermentation
+	if err := database.DB.Order("created_at desc").Find(&fermentations).Error; err != nil {
+		return nil, err
+	}
+	return fermentations, nil
+}

@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"ispindel.piwo.org/internal/handlers"
+	"ispindel.piwo.org/internal/models"
 	"ispindel.piwo.org/internal/services"
 	"ispindel.piwo.org/pkg/auth"
 	"ispindel.piwo.org/pkg/database"
@@ -63,6 +64,8 @@ func main() {
 
 	// Inicjalizacja serwisów
 	userService := services.NewUserService()
+	ispindelService := services.NewIspindelService()
+	fermentationService := services.NewFermentationService()
 
 	// Middleware do sprawdzania autentykacji
 	authMiddleware := func(c *gin.Context) {
@@ -87,6 +90,11 @@ func main() {
 		}
 
 		c.Set("user", user)
+
+		// Sprawdź, czy użytkownik jest administratorem
+		isAdmin := user.Email == "elroyski@gmail.com"
+		c.Set("isAdmin", isAdmin)
+
 		c.Next()
 	}
 
@@ -95,6 +103,7 @@ func main() {
 	ispindelHandler := handlers.NewIspindelHandler()
 	fermentationHandler := handlers.NewFermentationHandler()
 	settingsHandler := handlers.NewSettingsHandler()
+	adminHandler := handlers.NewAdminHandler(userService, ispindelService, fermentationService)
 
 	// Użyj middleware'a dla wszystkich routów
 	r.Use(authMiddleware)
@@ -163,12 +172,17 @@ func main() {
 	r.GET("/", func(c *gin.Context) {
 		user, exists := c.Get("user")
 		if exists {
-			c.Redirect(http.StatusSeeOther, "/dashboard")
+			// Sprawdź, czy użytkownik jest administratorem
+			userModel := user.(*models.User)
+			isAdmin := userModel.Email == adminHandler.AdminEmail
+
+			c.HTML(http.StatusOK, "index.html", gin.H{
+				"user":    userModel,
+				"isAdmin": isAdmin,
+			})
 			return
 		}
-		c.HTML(http.StatusOK, "index.html", gin.H{
-			"user": user,
-		})
+		c.HTML(http.StatusOK, "index.html", nil)
 	})
 
 	// Panel główny (chroniony)
@@ -198,6 +212,17 @@ func main() {
 		settingsGroup.GET("", settingsHandler.Settings)
 		settingsGroup.POST("/change-password", settingsHandler.ChangePassword)
 		settingsGroup.POST("/delete-account", settingsHandler.DeleteAccount)
+	}
+
+	// Panel administratora (tylko dla administratora)
+	adminGroup := r.Group("/admin")
+	adminGroup.Use(adminHandler.AdminRequired())
+	{
+		adminGroup.GET("", adminHandler.Dashboard)
+		adminGroup.GET("/users", adminHandler.ListUsers)
+		adminGroup.GET("/users/:id", adminHandler.UserDetails)
+		adminGroup.GET("/ispindels", adminHandler.ListIspindels)
+		adminGroup.GET("/fermentations", adminHandler.ListFermentations)
 	}
 
 	// Pobierz port z zmiennej środowiskowej lub ustaw domyślną wartość

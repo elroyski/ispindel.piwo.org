@@ -291,3 +291,30 @@ func (s *UserService) CreateUser(user *models.User) error {
 func (s *UserService) UpdateUser(user *models.User) error {
 	return s.db.Save(user).Error
 }
+
+// GetUserCount zwraca całkowitą liczbę użytkowników
+func (s *UserService) GetUserCount() (int64, error) {
+	var count int64
+	if err := s.db.Model(&models.User{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// GetActiveUserCount zwraca liczbę aktywnych użytkowników
+func (s *UserService) GetActiveUserCount() (int64, error) {
+	var count int64
+	if err := s.db.Model(&models.User{}).Where("is_active = ?", true).Count(&count).Error; err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+// GetAllUsers zwraca wszystkich użytkowników systemu
+func (s *UserService) GetAllUsers() ([]models.User, error) {
+	var users []models.User
+	if err := s.db.Order("created_at desc").Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
+}
