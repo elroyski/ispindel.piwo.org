@@ -432,10 +432,43 @@ func (s *FermentationService) GetFermentationCount() (int64, error) {
 }
 
 // GetAllFermentations zwraca wszystkie fermentacje w systemie
-func (s *FermentationService) GetAllFermentations() ([]models.Fermentation, error) {
+func (s *FermentationService) GetAllFermentations() ([]map[string]interface{}, error) {
 	var fermentations []models.Fermentation
-	if err := database.DB.Order("created_at desc").Find(&fermentations).Error; err != nil {
+	if err := database.DB.Order("started_at desc").Find(&fermentations).Error; err != nil {
 		return nil, err
 	}
-	return fermentations, nil
+
+	var results []map[string]interface{}
+	for _, f := range fermentations {
+		// Pobierz dane użytkownika, aby uzyskać jego nazwę
+		var user models.User
+		if err := database.DB.First(&user, f.UserID).Error; err == nil {
+			results = append(results, map[string]interface{}{
+				"ID":        f.ID,
+				"Name":      f.Name,
+				"UserID":    f.UserID,
+				"UserName":  user.Name,
+				"Style":     f.Style,
+				"StyleID":   f.StyleID,
+				"StartedAt": f.StartedAt,
+				"EndedAt":   f.EndedAt,
+				"IsActive":  f.IsActive,
+			})
+		} else {
+			// Jeśli nie udało się znaleźć użytkownika, dodaj fermentację bez nazwy użytkownika
+			results = append(results, map[string]interface{}{
+				"ID":        f.ID,
+				"Name":      f.Name,
+				"UserID":    f.UserID,
+				"UserName":  "Nieznany",
+				"Style":     f.Style,
+				"StyleID":   f.StyleID,
+				"StartedAt": f.StartedAt,
+				"EndedAt":   f.EndedAt,
+				"IsActive":  f.IsActive,
+			})
+		}
+	}
+
+	return results, nil
 }

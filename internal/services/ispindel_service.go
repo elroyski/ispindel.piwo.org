@@ -388,10 +388,41 @@ func (s *IspindelService) GetIspindelCount() (int64, error) {
 }
 
 // GetAllIspindels zwraca wszystkie urządzenia iSpindel w systemie
-func (s *IspindelService) GetAllIspindels() ([]models.Ispindel, error) {
+func (s *IspindelService) GetAllIspindels() ([]map[string]interface{}, error) {
 	var ispindels []models.Ispindel
 	if err := database.DB.Order("created_at desc").Find(&ispindels).Error; err != nil {
 		return nil, err
 	}
-	return ispindels, nil
+
+	var results []map[string]interface{}
+	for _, isp := range ispindels {
+		// Pobierz dane użytkownika, aby uzyskać jego nazwę
+		var user models.User
+		if err := database.DB.First(&user, isp.UserID).Error; err == nil {
+			results = append(results, map[string]interface{}{
+				"ID":        isp.ID,
+				"Name":      isp.Name,
+				"UserID":    isp.UserID,
+				"UserName":  user.Name,
+				"DeviceID":  isp.DeviceID,
+				"IsActive":  isp.IsActive,
+				"LastSeen":  isp.LastSeen,
+				"CreatedAt": isp.CreatedAt,
+			})
+		} else {
+			// Jeśli nie udało się znaleźć użytkownika, dodaj urządzenie bez nazwy użytkownika
+			results = append(results, map[string]interface{}{
+				"ID":        isp.ID,
+				"Name":      isp.Name,
+				"UserID":    isp.UserID,
+				"UserName":  "Nieznany",
+				"DeviceID":  isp.DeviceID,
+				"IsActive":  isp.IsActive,
+				"LastSeen":  isp.LastSeen,
+				"CreatedAt": isp.CreatedAt,
+			})
+		}
+	}
+
+	return results, nil
 }
