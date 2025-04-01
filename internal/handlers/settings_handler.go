@@ -123,25 +123,28 @@ func (h *SettingsHandler) DeleteAccount(c *gin.Context) {
 	}
 	userModel := user.(*models.User)
 
-	// Pobierz i sprawdź hasło
-	password := c.PostForm("password")
-	if password == "" {
-		c.HTML(http.StatusBadRequest, "settings.html", gin.H{
-			"user":    userModel,
-			"error":   "Hasło jest wymagane do usunięcia konta",
-			"version": getSystemVersion(),
-		})
-		return
-	}
+	// Jeśli użytkownik ma hasło (zalogowany standardową metodą), sprawdź je
+	if userModel.Password != "" {
+		// Pobierz i sprawdź hasło
+		password := c.PostForm("password")
+		if password == "" {
+			c.HTML(http.StatusBadRequest, "settings.html", gin.H{
+				"user":    userModel,
+				"error":   "Hasło jest wymagane do usunięcia konta",
+				"version": getSystemVersion(),
+			})
+			return
+		}
 
-	// Sprawdź poprawność hasła
-	if err := bcrypt.CompareHashAndPassword([]byte(userModel.Password), []byte(password)); err != nil {
-		c.HTML(http.StatusBadRequest, "settings.html", gin.H{
-			"user":    userModel,
-			"error":   "Nieprawidłowe hasło",
-			"version": getSystemVersion(),
-		})
-		return
+		// Sprawdź poprawność hasła
+		if err := bcrypt.CompareHashAndPassword([]byte(userModel.Password), []byte(password)); err != nil {
+			c.HTML(http.StatusBadRequest, "settings.html", gin.H{
+				"user":    userModel,
+				"error":   "Nieprawidłowe hasło",
+				"version": getSystemVersion(),
+			})
+			return
+		}
 	}
 
 	// Usuń konto użytkownika
@@ -156,6 +159,7 @@ func (h *SettingsHandler) DeleteAccount(c *gin.Context) {
 
 	// Wyloguj użytkownika
 	c.SetCookie("session", "", -1, "/", "", false, true)
+	c.SetCookie("token", "", -1, "/", "", false, true)
 
 	// Przekieruj na stronę logowania
 	c.Redirect(http.StatusSeeOther, "/auth/login")
